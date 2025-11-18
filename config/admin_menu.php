@@ -1,6 +1,6 @@
 <?php
 
-return [
+return [ 
     [
         'label' => 'Dashboard',
         'icon' => 'fas fa-home',
@@ -15,14 +15,14 @@ return [
             [
                 'label' => 'Danh sách',
                 'icon' => 'fas fa-list',
-                'route' => 'admin.users.index',
-                'permission' => 'view users',
+                'route' => 'users.index',
+                'permission' => 'users-list',
             ],
             [
-                'label' => 'Thêm mới',
+                'label' => 'Phân Quyền',
                 'icon' => 'fas fa-plus',
-                'route' => 'admin.users.create',
-                'permission' => 'create users',
+                'route' => 'role.index',
+                'permission' => 'role-list',
             ],
         ],
     ],

@@ -1,25 +1,24 @@
 <?php
 
-namespace Modules\Auth\Http\Controllers;
+namespace Modules\Role\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-
-class AuthController extends Controller
+class RoleController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function __construct()
     {
-         $this->middleware('permission:auth-list|auth-create|auth-edit|auth-delete', ['only' => ['index','show']]);
-         $this->middleware('permission:auth-create', ['only' => ['create','store']]);
-         $this->middleware('permission:auth-edit', ['only' => ['edit','update']]);
-         $this->middleware('permission:auth-delete', ['only' => ['destroy']]);
+         $this->middleware('permission:role-list|role-create|role-edit|role-delete', ['only' => ['index','show']]);
+         $this->middleware('permission:role-create', ['only' => ['create','store']]);
+         $this->middleware('permission:role-edit', ['only' => ['edit','update']]);
+         $this->middleware('permission:role-delete', ['only' => ['destroy']]);
     }
     public function index()
     {
-        return view('Auth::auth');
+        return view('Role::role');
     }
 
     /**

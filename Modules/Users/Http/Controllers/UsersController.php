@@ -1,25 +1,24 @@
 <?php
 
-namespace Modules\Auth\Http\Controllers;
+namespace Modules\Users\Http\Controllers;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-
-class AuthController extends Controller
+class UsersController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
     public function __construct()
     {
-         $this->middleware('permission:auth-list|auth-create|auth-edit|auth-delete', ['only' => ['index','show']]);
-         $this->middleware('permission:auth-create', ['only' => ['create','store']]);
-         $this->middleware('permission:auth-edit', ['only' => ['edit','update']]);
-         $this->middleware('permission:auth-delete', ['only' => ['destroy']]);
+        //  $this->middleware('permission:users-list|users-create|users-edit|users-delete', ['only' => ['index','show']]);
+        //  $this->middleware('permission:users-create', ['only' => ['create','store']]);
+        //  $this->middleware('permission:users-edit', ['only' => ['edit','update']]);
+        //  $this->middleware('permission:users-delete', ['only' => ['destroy']]);
     }
     public function index()
     {
-        return view('Auth::auth');
+        return view('Users::users');
     }
 
     /**

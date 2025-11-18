@@ -3,8 +3,7 @@
 @section('title', 'TEMPLATE HTML BOOSTRAP 5')
 
 @section('content')
-    <h3>TEMPLATE HTML BOOSTRAP 5</h3>
-
+     @livewire('role.role-list')
 @endsection
 
 @push('css')
