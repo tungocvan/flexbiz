@@ -22,9 +22,17 @@ class UserDemoRoles extends Seeder
         $role = Role::findByName('admin');
         $userAdmin->assignRole($role);
 
-        $user = User::factory()->create([
+        $editor = User::factory()->create([
             'name' => 'Từ Ngọc Vân 1',
             'email' => 'tungocvan1@gmail.com',
+            'password' => bcrypt('123456'),
+        ]);
+        $role = Role::findByName('editor');
+        $editor->assignRole($role);
+
+        $user = User::factory()->create([
+            'name' => 'Từ Ngọc Vân 2',
+            'email' => 'tungocvan2@gmail.com',
             'password' => bcrypt('123456'),
         ]);
         $role = Role::findByName('user');

@@ -3,25 +3,18 @@
 @section('title', 'DASHBOARD')
 
 @section('content')
-<div class="container">
-    <h2>DASHBOARD</h2>
-</div>
+
 
 @endsection
 
-@section('css')
-@stack('styles')
-    {{-- Sử dụng ở component @push(css)<style>...</style>@endpush ở cuối file --}}
-    {{-- Add here extra stylesheets --}}
-    {{-- <link rel="stylesheet" href="/css/admin_custom.css"> --}}
+@push('css')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
+@endpush
 
-@stop
-
-@section('js')
-@stack('scripts')
+@push('js')
      <script>
         document.addEventListener("DOMContentLoaded", () => {
             console.log("Lắng nghe sự kiện DOMContentLoaded được gọi trước jquery");
         })
      </script>
-@stop
+@endpush

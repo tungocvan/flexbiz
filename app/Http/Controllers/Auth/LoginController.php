@@ -9,6 +9,7 @@ use Illuminate\Http\JsonResponse;
 
 class LoginController extends Controller
 {
+
     public function showLoginForm()
     {
         return view('auth.login');
@@ -30,19 +31,12 @@ class LoginController extends Controller
 
     public function logout(Request $request)
     {
+        Auth::logout();                          // đăng xuất user
 
-        $this->guard()->logout();
+        $request->session()->invalidate();       // xoá session cũ
 
-        $request->session()->invalidate();
+        $request->session()->regenerateToken();  // tạo CSRF mới
 
-        $request->session()->regenerateToken();
-
-        if ($response = $this->loggedOut($request)) {
-            return $response;
-        }
-
-        return $request->wantsJson()
-            ? new JsonResponse([], 204)
-            : redirect('/');
+        return redirect()->route('login');       // quay về trang login
     }
 }

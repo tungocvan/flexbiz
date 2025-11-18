@@ -16,6 +16,7 @@
         <div class="app-content p-3">
             @yield('content')
         </div>
+
     </main>
 
     {{-- Footer --}}
@@ -23,3 +24,4 @@
 
 </div>
 @endsection
+

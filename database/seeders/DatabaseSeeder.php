@@ -6,6 +6,8 @@ use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
+use Database\Seeders\RolesAndPermissionsSeeder;
+use Database\Seeders\UserDemoRoles;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,15 +18,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        // $user = User::factory()->create([
-        //     'name' => 'Từ Ngọc Vân',
-        //     'email' => 'tungocvan@gmail.com',
-        //     'password' => bcrypt('123456'),
-        // ]);
-        // $role = Role::findByName('admin');
-        // $user->assignRole($role);
+        $this->call([
+            RolesAndPermissionsSeeder::class,
+            UserDemoRoles::class,
+        ]);
 
     }
 }

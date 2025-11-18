@@ -18,7 +18,6 @@
 </head>
 
 <body class="@yield('classes_body', 'layout-fixed sidebar-expand-lg bg-body-tertiary')" @yield('body_data')>
-
     {{-- Body Content --}}
     @yield('body')
 
@@ -28,6 +27,5 @@
     {{-- Custom JS --}}
     @yield('adminlte_js')
     @stack('js')
-
 </body>
 </html>

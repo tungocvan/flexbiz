@@ -16,4 +16,8 @@ Route::prefix('admin')->middleware('auth')->group(function() {
         ->names('admin.users');
 });
 
-Route::post('/admin/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+Route::middleware('web')->post('/admin/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+
+// Route::middleware(['web'])->get('/template', function () {
+//         return view('template');
+// })->name('template');

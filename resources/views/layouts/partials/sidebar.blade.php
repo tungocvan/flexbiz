@@ -1,74 +1,95 @@
 @php
     $menus = config('admin_menu', []);
     $user = auth()->user();
+
+    // Hàm kiểm tra active cho tree menu (nếu menu có children)
+    function isActiveMenu($menu)
+    {
+        if (!empty($menu['children'])) {
+            foreach ($menu['children'] as $child) {
+                if (request()->routeIs($child['route'])) {
+                    return true; // Chỉ mở nếu route CON khớp
+                }
+            }
+        }
+        return false; // Không mở nếu không phải route con
+    }
+
 @endphp
 
-<aside class="app-sidebar bg-dark text-white shadow-lg" data-bs-theme="dark" id="sidebar">
+<aside class="app-sidebar bg-body-secondary shadow" data-bs-theme="dark">
 
-    <!-- LOGO + SIDEBAR TOGGLE -->
-    <div class="sidebar-header d-flex align-items-center justify-content-between px-3 py-2 border-bottom border-secondary">
-        <span class="brand-text fw-bold fs-5 menu-text">FlexBiz Admin</span>
+    <!-- SIDEBAR BRAND -->
+    <div class="sidebar-brand">
+        <a href="{{ route('admin.dashboard') }}" class="brand-link logo-switch">
+            <img src="/assets/img/AdminLTELogo.png" alt="Admin Logo Small"
+                class="brand-image-xl logo-xs opacity-75 shadow">
 
-        <!-- Toggle Button -->
-        {{-- <button class="btn btn-sm btn-outline-light" id="sidebarToggle" style="border-radius: 6px;">
-            <i class="fas fa-bars"></i>
-        </button> --}}
+            <img src="/assets/img/AdminLTEFullLogo.png" alt="Admin Logo Large" class="brand-image-xs logo-xl opacity-75">
+        </a>
     </div>
 
-    <!-- MENU -->
-    <nav class="mt-2">
-        <ul class="nav nav-pills nav-sidebar flex-column" id="sidebarMenu">
+    <!-- SIDEBAR WRAPPER -->
+    <div class="sidebar-wrapper" data-overlayscrollbars="host">
+        <div class="" data-overlayscrollbars-viewport="scrollbarHidden overflowXHidden overflowYHidden">
 
-            @foreach ($menus as $menu)
-                @if($user && ($user->hasRole('admin') || $user->can($menu['permission'])))
-                    <li class="nav-item">
+            <nav class="mt-2">
+                <ul class="nav sidebar-menu flex-column" data-lte-toggle="treeview" role="menu"
+                    data-accordion="false">
 
-                        <a href="{{ route($menu['route']) }}"
-                           class="nav-link d-flex align-items-center
-                           {{ request()->routeIs($menu['route']) ? 'active' : 'text-white' }}"
-                           style="padding: 10px 18px;"
-                        >
-                            <i class="nav-icon {{ $menu['icon'] }} me-2" style="font-size: 16px; width:24px; text-align:center;"></i>
+                    @foreach ($menus as $menu)
 
-                            <span class="menu-text">{{ $menu['label'] }}</span>
-                        </a>
-                    </li>
-                @endif
-            @endforeach
+                        {{-- Kiểm tra quyền --}}
+                        @if ($user && ($user->hasRole('admin') || $user->can($menu['permission'])))
+                            {{-- Nếu có menu con => TREEVIEW --}}
+                            @if (!empty($menu['children']))
+                                @php
+                                    $isOpen = isActiveMenu($menu) ? 'menu-open' : '';
+                                    $isActive = isActiveMenu($menu) ? 'active' : '';
+                                @endphp
 
-        </ul>
-    </nav>
+                                <li class="nav-item {{ $isOpen }}">
+                                    <a href="#" class="nav-link {{ $isActive }}">
+                                        <i class="nav-icon {{ $menu['icon'] }}"></i>
+                                        <p>
+                                            {{ $menu['label'] }}
+                                            <i class="nav-arrow bi bi-chevron-right"></i>
+                                        </p>
+                                    </a>
 
+                                    <!-- Submenu -->
+                                    <ul class="nav nav-treeview">
+                                        @foreach ($menu['children'] as $child)
+                                            {{-- Kiểm tra quyền submenu --}}
+                                            @if ($user->can($child['permission']) || $user->hasRole('admin'))
+                                                <li class="nav-item">
+                                                    <a href="{{ route($child['route']) }}"
+                                                        class="nav-link {{ request()->routeIs($child['route']) ? 'active' : '' }}">
+                                                        <i class="nav-icon bi bi-circle"></i>
+                                                        <p>{{ $child['label'] }}</p>
+                                                    </a>
+                                                </li>
+                                            @endif
+                                        @endforeach
+                                    </ul>
+                                </li>
+                            @else
+                                {{-- MENU ĐƠN --}}
+                                <li class="nav-item">
+                                    <a href="{{ route($menu['route']) }}"
+                                        class="nav-link {{ request()->routeIs($menu['route']) ? 'active' : '' }}">
+                                        <i class="nav-icon {{ $menu['icon'] }}"></i>
+                                        <p>{{ $menu['label'] }}</p>
+                                    </a>
+                                </li>
+                            @endif
+                        @endif
+
+                    @endforeach
+
+                </ul>
+            </nav>
+
+        </div>
+    </div>
 </aside>
-
-
-
-<!-- SIDEBAR CSS -->
-<style>
-    /* ---------------- DEFAULT SIDEBAR ---------------- */
-    #sidebar {
-        transition: width 0.25s ease;
-        overflow: hidden;
-        min-height: 100vh;
-
-    }
-
-    /* Ẩn chữ khi collapse */
-    #sidebar.collapsed .menu-text {
-        display: none !important;
-    }
-
-    /* Menu hover */
-    #sidebar .nav-link:hover {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border-radius: 8px;
-    }
-
-    /* Active menu */
-    #sidebar .nav-link.active {
-        background: #0d6efd !important;
-        color: #fff !important;
-        border-radius: 8px;
-        font-weight: 600;
-    }
-</style>
