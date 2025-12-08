@@ -1,6 +1,6 @@
 <?php
 
-return [ 
+return [
     [
         'label' => 'Dashboard',
         'icon' => 'fas fa-home',
@@ -53,6 +53,12 @@ return [
                 'label' => 'Form Select',
                 'icon' => 'fas fa-plus',
                 'route' => 'template.form-select',
+                'permission' => 'template-list',
+            ],
+            [
+                'label' => 'Components',
+                'icon' => 'fas fa-plus',
+                'route' => 'template.components',
                 'permission' => 'template-list',
             ],
         ],
