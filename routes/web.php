@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
+Route::middleware('auth')->get('/', function () {
     return view('welcome');
 });
 

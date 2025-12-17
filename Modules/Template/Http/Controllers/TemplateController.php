@@ -27,6 +27,17 @@ class TemplateController extends Controller
 
         return view('Template::template',compact('component'));
     }
+    public function adminTemplate()
+    {
+        // Lấy URL hiện tại
+        $currentUrl = url()->current();
+         // Lấy path (chỉ phần sau domain)
+        $path = request()->path(); // ví dụ: template/dashboard
+         // Lấy segment cuối cùng của URI
+        $component = request()->segment(count(request()->segments())); // "dashboard"
+
+        return view('Template::template-nolayout',compact('component'));
+    }
 
 
     /**

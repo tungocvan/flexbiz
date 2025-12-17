@@ -8,5 +8,6 @@ Route::middleware(['web','auth'])->prefix('/template')->name('template.')->group
     Route::get('/form-add', [TemplateController::class,'index'])->name('form-add');
     Route::get('/form-basic', [TemplateController::class,'index'])->name('form-basic');
     Route::get('/form-select', [TemplateController::class,'index'])->name('form-select');
+    Route::get('/admin-template', [TemplateController::class,'adminTemplate'])->name('admin-template');
     Route::get('/components', [TemplateController::class,'index'])->name('components');
 });
