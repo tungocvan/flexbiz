@@ -79,14 +79,28 @@ class ModuleServiceProvider extends ServiceProvider
         }
 
         // --- Livewire Components ---
+        // --- Livewire Components ---
         $livewirePath = $modulePath . '/Livewire';
+
         if (File::exists($livewirePath)) {
-            $componentFiles = File::allFiles($livewirePath);
-            foreach ($componentFiles as $file) {
-                $className = pathinfo($file->getFilename(), PATHINFO_FILENAME);
-                $fullClass = "\\Modules\\$module\\Livewire\\$className";
-                $alias = Str::kebab($className); // CamelCase -> kebab-case
-                Livewire::component(strtolower($module) . '.' . $alias, $fullClass);
+            foreach (File::allFiles($livewirePath) as $file) {
+                $relativePath = str_replace([$livewirePath . DIRECTORY_SEPARATOR, '.php'], '', $file->getPathname());
+
+                $classPath = str_replace(DIRECTORY_SEPARATOR, '\\', $relativePath);
+
+                $fullClass = "\\Modules\\{$module}\\Livewire\\{$classPath}";
+
+                if (!class_exists($fullClass)) {
+                    continue;
+                }
+
+                $alias = collect(explode(DIRECTORY_SEPARATOR, $relativePath))
+                    ->map(fn($part) => Str::kebab($part))
+                    ->implode('.');
+
+                app()->booted(function () use ($module, $alias, $fullClass) {
+                    Livewire::component(strtolower($module) . '.' . $alias, $fullClass);
+                });
             }
         }
 
@@ -101,7 +115,6 @@ class ModuleServiceProvider extends ServiceProvider
         if (File::exists($bladeViewPath)) {
             // 🔹 Cho phép load view của Blade component trong module
             $this->loadViewsFrom($bladeViewPath, strtolower($module));
-
         }
     }
 }

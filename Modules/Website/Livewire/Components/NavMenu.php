@@ -10,13 +10,14 @@ class NavMenu extends Component
     public function render()
     {
         // Lấy danh mục gốc, chỉ lấy loại 'product' và đang hoạt động
+       
         $categories = Category::root()
             ->active()
             ->ofType('product')
             ->with('childrenRecursive')
             ->orderBy('sort_order', 'asc')
             ->get();
-
+           // dd($categories);
         return view('Website::livewire.components.nav-menu', [
             'categories' => $categories
         ]);
