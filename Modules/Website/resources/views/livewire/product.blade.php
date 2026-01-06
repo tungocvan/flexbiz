@@ -1,8 +1,10 @@
 <div>
     <h3 class="text-primary">DANH SÁCH SẢN PHẨM MỚI (Bootstrap 4.6.1)</h3>
     <hr>
-    </div>
-
+    @section('content')
+        @livewire('website.products.index')
+    @endsection
+</div>
 @push('scripts')
 <script>
     document.addEventListener("DOMContentLoaded", () => {

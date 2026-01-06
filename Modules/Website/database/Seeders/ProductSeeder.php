@@ -15,13 +15,13 @@ class ProductSeeder extends Seeder
         $count = 20;
 
         // URL ảnh mẫu tượng trưng (Placeholder)
-        $imageUrl = 'https://via.placeholder.com/600x600.png?text=Product+Image';
+        $imageUrl = 'https://placehold.co/600x600.png?text=Product+Image';
 
         // Mảng gallery gồm 3 ảnh mẫu tượng trưng
         $gallery = [
-            'https://via.placeholder.com/600x600.png?text=Gallery+1',
-            'https://via.placeholder.com/600x600.png?text=Gallery+2',
-            'https://via.placeholder.com/600x600.png?text=Gallery+3',
+            'https://placehold.co/600x600.png?text=Gallery+1',
+            'https://placehold.co/600x600.png?text=Gallery+2',
+            'https://placehold.co/600x600.png?text=Gallery+3',
         ];
 
         $categories = Category::all();

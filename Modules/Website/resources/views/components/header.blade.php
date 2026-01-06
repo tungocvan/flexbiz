@@ -6,7 +6,7 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             {{-- Gọi Livewire Component NavMenu --}}
-            @livewire('website.components.nav-menu')
+            {{-- @livewire('website.components.nav-menu') --}}
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
