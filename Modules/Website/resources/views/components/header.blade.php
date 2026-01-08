@@ -10,9 +10,10 @@
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a href="/cart" class="nav-link">
+                    {{-- <a href="/cart" class="nav-link">
                         Giỏ hàng <span class="badge badge-primary">0</span>
-                    </a>
+                    </a> --}}
+                    @livewire('website.cart.cart-icon')
                 </li>
             </ul>
         </div>
