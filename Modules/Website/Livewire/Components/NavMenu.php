@@ -7,19 +7,20 @@ use Modules\Website\Models\Category;
 
 class NavMenu extends Component
 {
+    public $categories;
+
+    public function mount()
+    {
+        $this->categories = Category::active()
+            ->ofType('product')
+            ->root()
+            ->with('childrenRecursive')
+            ->orderBy('sort_order')
+            ->get();
+    }
+
     public function render()
     {
-        // Lấy danh mục gốc, chỉ lấy loại 'product' và đang hoạt động
-       
-        $categories = Category::root()
-            ->active()
-            ->ofType('product')
-            ->with('childrenRecursive')
-            ->orderBy('sort_order', 'asc')
-            ->get();
-           // dd($categories);
-        return view('Website::livewire.components.nav-menu', [
-            'categories' => $categories
-        ]);
+        return view('Website::livewire.components.nav-menu');
     }
 }

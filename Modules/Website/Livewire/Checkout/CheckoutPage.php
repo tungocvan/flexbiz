@@ -38,29 +38,61 @@ class CheckoutPage extends Component
 
     public function placeOrder()
     {
-        $this->validate();
+        $cart = session('cart', []);
 
-        $order = Order::create([
-            'code' => 'ORD-' . strtoupper(Str::random(8)),
-            'name' => $this->name,
-            'phone' => $this->phone,
-            'address' => $this->address,
-            'total' => $this->total,
-            'payment_method' => 'cod',
+        if (empty($cart)) {
+            return redirect()->route('cart.index');
+        }
+
+        $this->validate([
+            'name'    => 'required|string|max:255',
+            'phone'   => 'required|string|max:20',
+            'address' => 'required|string|max:255',
         ]);
 
-        foreach ($this->cart as $item) {
-            $order->items()->create([
-                'product_id' => $item['id'],
-                'name' => $item['name'],
-                'price' => $item['price'],
-                'qty' => $item['qty'],
+        DB::transaction(function () use ($cart) {
+
+            $subtotal = collect($cart)->sum(fn ($item) =>
+                $item['price'] * $item['qty']
+            );
+
+            $discount = 0;
+            $total = $subtotal - $discount;
+
+            $order = Order::create([
+                'user_id'          => auth()->id(),
+                'order_code'       => $this->generateOrderCode(),
+                'customer_name'    => $this->name,
+                'customer_phone'   => $this->phone,
+                'customer_email'   => $this->email,
+                'customer_address' => $this->address,
+                'note'             => $this->note,
+                'subtotal'         => $subtotal,
+                'discount'         => $discount,
+                'total'            => $total,
+                'status'           => 'pending',
             ]);
-        }
+
+            foreach ($cart as $item) {
+                OrderItem::create([
+                    'order_id'     => $order->id,
+                    'product_id'   => $item['product_id'] ?? null,
+                    'product_name' => $item['name'],
+                    'price'        => $item['price'],
+                    'quantity'     => $item['qty'],
+                    'total'        => $item['price'] * $item['qty'],
+                ]);
+            }
+        });
 
         session()->forget('cart');
 
-        return redirect()->route('website.checkout.success', $order->code);
+        return redirect()->route('order.success');
+    }
+
+    protected function generateOrderCode()
+    {
+        return 'ORD-' . now()->format('Ymd') . '-' . Str::upper(Str::random(6));
     }
 
     public function render()

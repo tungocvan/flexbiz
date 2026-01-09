@@ -7,12 +7,12 @@ use Modules\Website\Models\WpProduct;
 
 class ProductDetail extends Component
 {
+    public string $slug;
     public WpProduct $product;
 
-    public function mount(string $slug)
+    public function mount()
     {
-        $this->product = WpProduct::query()
-            ->where('slug', $slug)
+        $this->product = WpProduct::where('slug', $this->slug)
             ->where('is_active', true)
             ->firstOrFail();
     }

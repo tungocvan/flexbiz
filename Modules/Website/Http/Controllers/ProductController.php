@@ -1,62 +1,19 @@
 <?php
 
 namespace Modules\Website\Http\Controllers;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+
+use Illuminate\Routing\Controller;
 
 class ProductController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function __construct()
+    public function index(?string $categorySlug = null)
     {
-        //  $this->middleware('permission:website-list|website-create|website-edit|website-delete', ['only' => ['index','show']]);
-        //  $this->middleware('permission:website-create', ['only' => ['create','store']]);
-        //  $this->middleware('permission:website-edit', ['only' => ['edit','update']]);
-        //  $this->middleware('permission:website-delete', ['only' => ['destroy']]);
-    }
-    public function index()
-    {
-        return view('Website::products.index');
+
+        return view('Website::products.index', compact('categorySlug'));
     }
 
     public function show(string $slug)
     {
         return view('Website::products.show', compact('slug'));
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

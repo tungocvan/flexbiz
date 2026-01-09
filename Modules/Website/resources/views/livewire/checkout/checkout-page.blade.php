@@ -1,7 +1,5 @@
 <div class="container my-5">
-
     <h3 class="mb-4">Checkout</h3>
-
     @if(empty($cart))
         <div class="alert alert-warning">
             Your cart is empty.
@@ -71,5 +69,4 @@
             </div>
         </div>
     @endif
-
 </div>

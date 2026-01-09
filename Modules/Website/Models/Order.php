@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Order extends Model
 {
+    protected $table = 'wp_orders';
     protected $fillable = [
         'user_id', 'order_code', 'customer_name', 'customer_phone',
         'customer_email', 'customer_address', 'note', 'subtotal',

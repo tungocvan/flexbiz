@@ -5,6 +5,7 @@ namespace Modules\Website\Livewire\Products;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Website\Models\WpProduct;
+use Modules\Website\Models\Category;
 
 class ProductList extends Component
 {
@@ -12,44 +13,34 @@ class ProductList extends Component
 
     protected $paginationTheme = 'bootstrap';
 
-    public function addQuickToCart(int $productId): void
-    {
-        $product = WpProduct::query()
-            ->where('is_active', true)
-            ->find($productId);
-
-        if (! $product) {
-            return;
-        }
-
-        // ✅ SESSION CART (KHÔNG SERVICE)
-        $cart = session()->get('cart', []);
-
-        if (isset($cart[$product->id])) {
-            $cart[$product->id]['qty']++;
-        } else {
-            $cart[$product->id] = [
-                'id'    => $product->id,
-                'name'  => $product->title,
-                'price' => $product->sale_price ?: $product->regular_price,
-                'qty'   => 1,
-                'image' => $product->image,
-            ];
-        }
-
-        session()->put('cart', $cart);
-
-        // ✅ EVENT CHUẨN – đồng bộ toàn Cart
-        $this->dispatch('cart-updated');
-    }
+    public ?string $categorySlug = null;
 
     public function render()
     {
-        return view('Website::livewire.products.product-list', [
-            'products' => WpProduct::query()
+
+        if ($this->categorySlug) {
+
+            $category = Category::active()
+                ->ofType('product')
+                ->where('slug', $this->categorySlug)
+                ->firstOrFail();
+
+            $category->load('childrenRecursive');
+            $categoryIds = $category->getAllChildrenIds();
+
+            $products = WpProduct::query()
+                ->whereHas('categories', fn ($q) =>
+                    $q->whereIn('categories.id', $categoryIds)
+                )
                 ->where('is_active', true)
-                ->latest()
-                ->paginate(12),
+                ->paginate(12);
+        } else {
+            $products = WpProduct::where('is_active', true)
+                ->paginate(12);
+        }
+
+        return view('Website::livewire.products.product-list', [
+            'products' => $products,
         ]);
     }
 }
