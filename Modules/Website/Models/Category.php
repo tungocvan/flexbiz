@@ -11,11 +11,22 @@ use Illuminate\Database\Eloquent\Builder;
 class Category extends Model
 {
     protected $fillable = [
-        'name', 'slug', 'url', 'icon', 'can', 'type', 'parent_id',
-        'description', 'image', 'is_active', 'sort_order', 'meta_title', 'meta_description'
+        'name', 'slug', 'url', 'icon', 'can', 'type',
+        'parent_id', 'description', 'image',
+        'is_active', 'sort_order',
+        'meta_title', 'meta_description'
     ];
 
-    // Relationships
+    protected $casts = [
+        'is_active' => 'boolean',
+        'sort_order' => 'integer',
+    ];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
     public function parent(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'parent_id');
@@ -23,9 +34,10 @@ class Category extends Model
 
     public function children(): HasMany
     {
-        return $this->hasMany(Category::class, 'parent_id')->orderBy('sort_order', 'asc');
+        return $this->hasMany(Category::class, 'parent_id')->orderBy('sort_order');
     }
 
+    // Đệ quy để lấy toàn bộ cây con
     public function childrenRecursive(): HasMany
     {
         return $this->children()->with('childrenRecursive');
@@ -36,29 +48,39 @@ class Category extends Model
         return $this->belongsToMany(WpProduct::class, 'category_product', 'category_id', 'product_id');
     }
 
-    // Scopes
-    public function scopeActive(Builder $query): void
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+    public function scopeActive(Builder $query): Builder
     {
-        $query->where('is_active', true);
+        return $query->where('is_active', true);
     }
 
-    public function scopeOfType(Builder $query, string $type): void
+    public function scopeRoot(Builder $query): Builder
     {
-        $query->where('type', $type);
+        return $query->whereNull('parent_id');
     }
 
-    public function scopeRoot(Builder $query): void
+    public function scopeOfType(Builder $query, string $type): Builder
     {
-        $query->whereNull('parent_id');
+        return $query->where('type', $type);
     }
 
-    // Helper
+    /*
+    |--------------------------------------------------------------------------
+    | Helpers (Logic Taxonomy Lõi)
+    |--------------------------------------------------------------------------
+    */
     public function getAllChildrenIds(): array
     {
         $ids = [$this->id];
-        foreach ($this->children as $child) {
+
+        foreach ($this->childrenRecursive as $child) {
             $ids = array_merge($ids, $child->getAllChildrenIds());
         }
+
         return $ids;
     }
 }

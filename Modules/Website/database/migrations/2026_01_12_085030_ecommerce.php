@@ -8,11 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | DROP TABLES IF EXISTS (THEO THỨ TỰ AN TOÀN)
-        |--------------------------------------------------------------------------
-        */
+        // 1. Dọn dẹp bảng cũ theo thứ tự khóa ngoại
         Schema::dropIfExists('order_items');
         Schema::dropIfExists('wp_orders');
         Schema::dropIfExists('cart_items');
@@ -21,11 +17,7 @@ return new class extends Migration
         Schema::dropIfExists('categories');
         Schema::dropIfExists('wp_products');
 
-        /*
-        |--------------------------------------------------------------------------
-        | wp_products
-        |--------------------------------------------------------------------------
-        */
+        // 2. Bảng Products
         Schema::create('wp_products', function (Blueprint $table) {
             $table->id();
             $table->string('title')->index();
@@ -41,20 +33,15 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | categories
-        |--------------------------------------------------------------------------
-        */
+        // 3. Bảng Categories
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
-
             $table->string('name');
             $table->string('slug')->nullable()->unique();
             $table->string('url')->nullable();
             $table->string('icon')->nullable();
             $table->string('can')->nullable();
-            $table->string('type')->nullable()->index();
+            $table->string('type')->nullable()->index(); // product, post, etc.
 
             $table->foreignId('parent_id')
                 ->nullable()
@@ -72,11 +59,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | category_product (pivot)
-        |--------------------------------------------------------------------------
-        */
+        // 4. Bảng Pivot Category-Product
         Schema::create('category_product', function (Blueprint $table) {
             $table->foreignId('category_id')
                 ->constrained('categories')
@@ -87,15 +70,10 @@ return new class extends Migration
                 ->cascadeOnDelete();
 
             $table->timestamps();
-
             $table->primary(['category_id', 'product_id']);
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | carts
-        |--------------------------------------------------------------------------
-        */
+        // 5. Bảng Carts
         Schema::create('carts', function (Blueprint $table) {
             $table->id();
             $table->string('session_id')->index();
@@ -103,11 +81,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | cart_items
-        |--------------------------------------------------------------------------
-        */
+        // 6. Bảng Cart Items
         Schema::create('cart_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('cart_id')->constrained('carts')->cascadeOnDelete();
@@ -118,11 +92,7 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | wp_orders
-        |--------------------------------------------------------------------------
-        */
+        // 7. Bảng Orders (Tên bảng là wp_orders để tránh trùng keywords)
         Schema::create('wp_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
@@ -132,18 +102,16 @@ return new class extends Migration
             $table->string('customer_email')->nullable();
             $table->string('customer_address');
             $table->text('note')->nullable();
+
             $table->decimal('subtotal', 10, 2);
             $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('total', 10, 2);
+
             $table->string('status')->default('pending')->index();
             $table->timestamps();
         });
 
-        /*
-        |--------------------------------------------------------------------------
-        | order_items
-        |--------------------------------------------------------------------------
-        */
+        // 8. Bảng Order Items
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('order_id')->constrained('wp_orders')->cascadeOnDelete();

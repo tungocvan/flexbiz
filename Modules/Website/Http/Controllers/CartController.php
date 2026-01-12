@@ -2,7 +2,7 @@
 
 namespace Modules\Website\Http\Controllers;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 
 class CartController extends Controller
 {

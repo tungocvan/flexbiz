@@ -1,7 +1,5 @@
-@extends('Website::layouts.website')
+@extends('Website::layouts.frontend')
 
 @section('content')
-<div class="container py-4">
     @livewire('website.products.product-detail', ['slug' => $slug])
-</div>
 @endsection

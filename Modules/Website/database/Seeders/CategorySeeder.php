@@ -10,15 +10,24 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = ['Điện thoại', 'Máy tính bảng', 'Phụ kiện', 'Âm thanh', 'Đồng hồ'];
+        // Danh sách danh mục mẫu
+        $categories = [
+            'Điện thoại thông minh',
+            'Laptop văn phòng',
+            'PC Gaming',
+            'Tai nghe & Âm thanh',
+            'Đồng hồ thông minh',
+            'Phụ kiện điện tử'
+        ];
 
-        foreach ($categories as $name) {
+        foreach ($categories as $index => $name) {
             Category::create([
                 'name' => $name,
                 'slug' => Str::slug($name),
-                'type' => 'product',
+                'type' => 'product', // Loại danh mục
                 'is_active' => true,
-                'sort_order' => 0
+                'sort_order' => $index,
+                'description' => "Danh mục chuyên về $name chính hãng, giá tốt."
             ]);
         }
     }

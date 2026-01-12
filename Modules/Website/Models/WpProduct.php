@@ -4,50 +4,73 @@ namespace Modules\Website\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
 
 class WpProduct extends Model
 {
-    protected $table = 'wp_products';
+    protected $table = 'wp_products'; // Khóa cứng tên bảng
 
     protected $fillable = [
         'title', 'slug', 'short_description', 'description',
-        'regular_price', 'sale_price', 'image', 'gallery', 'tags', 'is_active'
+        'regular_price', 'sale_price',
+        'image', 'gallery', 'tags',
+        'is_active'
     ];
 
     protected $casts = [
-        'gallery' => 'array', //
-        'tags' => 'array',    //
         'is_active' => 'boolean',
+        'gallery' => 'array',
+        'tags' => 'array',
         'regular_price' => 'decimal:2',
         'sale_price' => 'decimal:2',
     ];
 
-    // Accessors
-    public function getFinalPriceAttribute(): float
-    {
-        return (float) ($this->sale_price > 0 && $this->sale_price < $this->regular_price
-            ? $this->sale_price
-            : $this->regular_price);
-    }
-
-    public function getDiscountPercentAttribute(): int
-    {
-        if ($this->regular_price > 0 && $this->sale_price > 0) {
-            return (int) round((($this->regular_price - $this->sale_price) / $this->regular_price) * 100);
-        }
-        return 0;
-    }
-
-    // Relationships
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
     public function categories(): BelongsToMany
     {
         return $this->belongsToMany(Category::class, 'category_product', 'product_id', 'category_id');
     }
 
-    // Scopes
-    public function scopeActive(Builder $query): void
+    /*
+    |--------------------------------------------------------------------------
+    | Accessors
+    |--------------------------------------------------------------------------
+    */
+    // Giá bán cuối cùng (ưu tiên sale_price)
+    protected function finalPrice(): Attribute
     {
-        $query->where('is_active', true);
+        return Attribute::make(
+            get: fn () => $this->sale_price && $this->sale_price < $this->regular_price
+                ? $this->sale_price
+                : $this->regular_price
+        );
+    }
+
+    // Phần trăm giảm giá
+    protected function discountPercent(): Attribute
+    {
+        return Attribute::make(
+            get: function () {
+                if (!$this->sale_price || !$this->regular_price || $this->sale_price >= $this->regular_price) {
+                    return 0;
+                }
+                return round((($this->regular_price - $this->sale_price) / $this->regular_price) * 100);
+            }
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Scopes
+    |--------------------------------------------------------------------------
+    */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 }

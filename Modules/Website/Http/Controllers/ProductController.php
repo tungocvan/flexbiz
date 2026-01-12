@@ -2,17 +2,16 @@
 
 namespace Modules\Website\Http\Controllers;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 
 class ProductController extends Controller
 {
-    public function index(?string $categorySlug = null)
+    public function index()
     {
-
-        return view('Website::products.index', compact('categorySlug'));
+        return view('Website::products.index');
     }
 
-    public function show(string $slug)
+    public function show($slug)
     {
         return view('Website::products.show', compact('slug'));
     }

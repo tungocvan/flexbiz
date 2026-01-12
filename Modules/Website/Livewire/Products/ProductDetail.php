@@ -7,18 +7,21 @@ use Modules\Website\Models\WpProduct;
 
 class ProductDetail extends Component
 {
-    public string $slug;
-    public WpProduct $product;
+    public $slug;
 
-    public function mount()
+    public function mount($slug)
     {
-        $this->product = WpProduct::where('slug', $this->slug)
-            ->where('is_active', true)
-            ->firstOrFail();
+        $this->slug = $slug;
     }
 
     public function render()
     {
-        return view('Website::livewire.products.product-detail');
+        $product = WpProduct::active()
+            ->where('slug', $this->slug)
+            ->firstOrFail();
+
+        return view('Website::livewire.products.product-detail', [
+            'product' => $product
+        ]);
     }
 }

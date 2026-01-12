@@ -3,28 +3,26 @@
 namespace Modules\Website\Livewire\Cart;
 
 use Livewire\Component;
+use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Session;
 use Modules\Website\Models\Cart;
 
 class CartIcon extends Component
 {
-    public int $count = 0;
-
-    protected $listeners = ['cartUpdated' => 'loadCount'];
+    public $count = 0;
 
     public function mount()
     {
-        $this->loadCount();
+        $this->updateCount();
     }
 
-    public function loadCount()
+    #[On('cart-updated')]
+    public function updateCount()
     {
-        $cart = Cart::with('items')
-            ->where('session_id', session()->getId())
-            ->first();
+        $sessionId = Session::getId();
+        $cart = Cart::where('session_id', $sessionId)->first();
 
-        $this->count = $cart
-            ? $cart->items->sum('quantity')
-            : 0;
+        $this->count = $cart ? $cart->items()->sum('quantity') : 0;
     }
 
     public function render()
