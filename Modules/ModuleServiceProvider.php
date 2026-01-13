@@ -65,6 +65,19 @@ class ModuleServiceProvider extends ServiceProvider
             $this->loadJSONTranslationsFrom($modulePath . '/resources/lang');
         }
 
+        // --- Config ---
+        if (File::exists($modulePath . '/Config')) {
+            foreach (File::files($modulePath . '/Config') as $file) {
+                $configName = pathinfo($file->getFilename(), PATHINFO_FILENAME);
+
+                $this->mergeConfigFrom(
+                    $file->getPathname(),
+                    strtolower($module) . '.' . $configName
+                );
+            }
+        }
+
+
         // --- Helpers ---
         if (File::exists($modulePath . '/Helpers')) {
             $helperFiles = File::allFiles($modulePath . '/Helpers');

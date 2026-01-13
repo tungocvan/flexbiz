@@ -49,6 +49,7 @@ class CreateModule extends Command
             $this->info('Module đã được tạo');
             $moduleDir = [
                 $name,
+                $name.'/Config',
                 $name.'/database',
                 $name.'/database/factories',
                 $name.'/database/migrations',

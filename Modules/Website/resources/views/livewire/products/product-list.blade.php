@@ -1,5 +1,28 @@
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <h2 class="text-3xl font-bold text-gray-900 mb-8">Sản phẩm nổi bật</h2>
+    <h2 class="text-3xl font-bold text-gray-900">Sản phẩm nổi bật</h2>
+
+    <div class="flex gap-2 overflow-x-auto my-2 pb-2 md:pb-0 no-scrollbar mask-gradient">
+
+        <button wire:click="setCategory(null)"
+                class="px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors duration-200
+                {{ is_null($categorySlug)
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-white text-gray-600 border border-gray-200 hover:border-gray-900 hover:text-gray-900'
+                }}">
+            Tất cả
+        </button>
+
+        @foreach($categories as $cat)
+            <button wire:click="setCategory('{{ $cat->slug }}')"
+                    class="px-5 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-colors duration-200
+                    {{ $categorySlug === $cat->slug
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'bg-white text-gray-600 border border-gray-200 hover:border-blue-600 hover:text-blue-600'
+                    }}">
+                {{ $cat->name }}
+            </button>
+        @endforeach
+    </div>
 
     @if (session()->has('message'))
         <div class="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded shadow-lg z-50 animate-bounce">

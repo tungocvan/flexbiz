@@ -6,13 +6,22 @@ use Livewire\Component;
 use Livewire\WithPagination;
 use Illuminate\Support\Facades\Session;
 use Modules\Website\Models\WpProduct;
+use Modules\Website\Models\Category;
 use Modules\Website\Models\Cart;
 use Modules\Website\Models\CartItem;
 
 class ProductList extends Component
 {
     use WithPagination;
+    // Biến lưu slug danh mục đang chọn (Mặc định null = Tất cả)
+    public $categorySlug = null;
 
+    // Reset phân trang về 1 khi đổi danh mục
+    public function setCategory($slug)
+    {
+        $this->categorySlug = $slug;
+        $this->resetPage();
+    }
     // Hàm thêm vào giỏ hàng nhanh (Mặc định số lượng 1)
     public function addToCart($productId)
     {
@@ -55,14 +64,42 @@ class ProductList extends Component
         // session()->flash('message', "Đã thêm {$product->title} vào giỏ!");
     }
 
+    // public function render()
+    // {
+    //     $products = WpProduct::active()
+    //         ->latest()
+    //         ->paginate(12);
+
+    //     return view('Website::livewire.products.product-list', [
+    //         'products' => $products
+    //     ]);
+    // }
     public function render()
     {
-        $products = WpProduct::active()
-            ->latest()
-            ->paginate(12);
+        // 1. Lấy danh sách danh mục CHA để hiển thị menu
+        $categories = Category::active()->root()->orderBy('sort_order')->get();
+
+        // 2. Query Sản phẩm cơ bản
+        $query = WpProduct::active()->latest();
+
+        // 3. Áp dụng Filter nếu có chọn danh mục
+        if ($this->categorySlug) {
+            $category = Category::where('slug', $this->categorySlug)->first();
+
+            if ($category) {
+                // TUÂN THỦ LUẬT: Lấy cả ID của danh mục con (Recursive)
+                $category->load('childrenRecursive');
+                $categoryIds = $category->getAllChildrenIds();
+
+                $query->whereHas('categories', fn ($q) =>
+                    $q->whereIn('categories.id', $categoryIds)
+                );
+            }
+        }
 
         return view('Website::livewire.products.product-list', [
-            'products' => $products
+            'products' => $query->paginate(12),
+            'categories' => $categories // Truyền biến này ra View
         ]);
     }
 }
