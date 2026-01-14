@@ -11,18 +11,14 @@ class WebsiteController extends Controller
      */
     public function __construct()
     {
-         $this->middleware('permission:website-list|website-create|website-edit|website-delete', ['only' => ['index','show']]);
-         $this->middleware('permission:website-create', ['only' => ['create','store']]);
-         $this->middleware('permission:website-edit', ['only' => ['edit','update']]);
-         $this->middleware('permission:website-delete', ['only' => ['destroy']]);
+        //  $this->middleware('permission:website-list|website-create|website-edit|website-delete', ['only' => ['index','show']]);
+        //  $this->middleware('permission:website-create', ['only' => ['create','store']]);
+        //  $this->middleware('permission:website-edit', ['only' => ['edit','update']]);
+        //  $this->middleware('permission:website-delete', ['only' => ['destroy']]);
     }
-    public function website()
+    public function home()
     {
-        return view('Website::website');
-    }
-    public function adminPage()
-    {
-        return view('Website::website');
+        return view('Website::home.index');
     }
 
     /**

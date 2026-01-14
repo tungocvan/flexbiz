@@ -4,13 +4,16 @@ use Illuminate\Support\Facades\Route;
 use Modules\Website\Http\Controllers\ProductController;
 use Modules\Website\Http\Controllers\CartController;
 use Modules\Website\Http\Controllers\CheckoutController;
+use Modules\Website\Http\Controllers\AccountController;
+use Modules\Website\Http\Controllers\AuthController;
+use Modules\Website\Http\Controllers\WebsiteController;
 
 use Modules\Website\Http\Controllers\Admin\ProductController as AdminProductController;
 
 $websitePrefix = config('website.route_prefix', 'website');
 
 Route::middleware(['web','auth'])->prefix($websitePrefix)->name('website.')->group(function(){
-    Route::get('/admin', [WebsiteController::class,'adminPage'])->name('index');
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });
 
 /*
@@ -18,8 +21,13 @@ Route::middleware(['web','auth'])->prefix($websitePrefix)->name('website.')->gro
 | FRONTEND ROUTES (CUSTOMER)
 |--------------------------------------------------------------------------
 */
+Route::middleware(['web'])->get('/', [WebsiteController::class, 'home'])->name('home');
 
 Route::middleware(['web'])->prefix($websitePrefix)->name('website.')->group(function () {
+
+    Route::get('/login', [AuthController::class, 'login'])->name('login');
+    Route::get('/register', [AuthController::class, 'register'])->name('register');
+
     // 1. Trang chủ & Sản phẩm
     Route::get('/', [ProductController::class, 'index'])->name('home');
     Route::get('/product/{slug}', [ProductController::class, 'show'])->name('product.detail');
@@ -30,6 +38,9 @@ Route::middleware(['web'])->prefix($websitePrefix)->name('website.')->group(func
     // 3. Thanh toán (Checkout)
     Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout.index');
     Route::get('/checkout/success', [CheckoutController::class, 'success'])->name('checkout.success');
+
+    Route::get('/checkout/momo-callback', [CheckoutController::class, 'momoCallback'])->name('checkout.momo.callback');
+
 });
 
 /*
@@ -45,35 +56,16 @@ Route::prefix($websitePrefix.'/admin')
 
         Route::get('/', [AdminProductController::class, 'index'])->name('dashboard');
 
-        // Route::prefix('categories')
-        //     ->name('categories.')
-        //     ->group(function () {
-
-        //         Route::get('/', [AdminCategoryController::class, 'index'])->name('index');
-        //         Route::get('/create', [AdminCategoryController::class, 'create'])->name('create');
-        //         Route::post('/', [AdminCategoryController::class, 'store'])->name('store');
-        //         Route::get('/{category}/edit', [AdminCategoryController::class, 'edit'])->name('edit');
-        //         Route::put('/{category}', [AdminCategoryController::class, 'update'])->name('update');
-        //         Route::delete('/{category}', [AdminCategoryController::class, 'destroy'])->name('destroy');
-        //     });
-
-        // Route::prefix('products')
-        //     ->name('products.')
-        //     ->group(function () {
-
-        //         Route::get('/', [AdminProductController::class, 'index'])->name('index');
-        //         Route::get('/create', [AdminProductController::class, 'create'])->name('create');
-        //         Route::post('/', [AdminProductController::class, 'store'])->name('store');
-        //         Route::get('/{product}/edit', [AdminProductController::class, 'edit'])->name('edit');
-        //         Route::put('/{product}', [AdminProductController::class, 'update'])->name('update');
-        //         Route::delete('/{product}', [AdminProductController::class, 'destroy'])->name('destroy');
-        //     });
-
-        // Route::prefix('orders')
-        //     ->name('orders.')
-        //     ->group(function () {
-
-        //         Route::get('/', [AdminOrderController::class, 'index'])->name('index');
-        //         Route::get('/{order}', [AdminOrderController::class, 'show'])->name('show');
-        // });
 });
+
+// --- ACCOUNT ROUTES (Yêu cầu đăng nhập) ---
+Route::middleware(['web','auth'])->prefix('account')->name('account.')->group(function () {
+    // Dashboard
+    Route::get('/', [AccountController::class, 'index'])->name('dashboard');
+
+    // Các route sau này sẽ thêm: orders, profile...
+    // Đơn hàng (Mới thêm)
+    Route::get('/orders', [AccountController::class, 'orders'])->name('orders');
+    Route::get('/orders/{code}', [AccountController::class, 'orderDetail'])->name('orders.detail');
+});
+

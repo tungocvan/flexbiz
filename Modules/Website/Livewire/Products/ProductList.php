@@ -4,6 +4,7 @@ namespace Modules\Website\Livewire\Products;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\Attributes\On;
 use Illuminate\Support\Facades\Session;
 use Modules\Website\Models\WpProduct;
 use Modules\Website\Models\Category;
@@ -15,6 +16,38 @@ class ProductList extends Component
     use WithPagination;
     // Biến lưu slug danh mục đang chọn (Mặc định null = Tất cả)
     public $categorySlug = null;
+    public $search = '';
+    public $sort = 'latest';
+
+    // LẮNG NGHE SỰ KIỆN TỪ CON
+    #[On('search-updated')]
+    public function updateSearch($search)
+    {
+        $this->search = $search;
+        $this->resetPage(); // Quan trọng: Reset về trang 1 khi tìm kiếm
+    }
+
+    // LẮNG NGHE SỰ KIỆN TỪ COMPONENT CON
+    #[On('filter-category-updated')]
+    public function updateCategoryFilter($slug)
+    {
+        $this->categorySlug = $slug;
+        $this->resetPage(); // Reset về trang 1 khi đổi filter
+    }
+
+    // 2. LẮNG NGHE SỰ KIỆN SORT
+    #[On('sort-updated')]
+    public function updateSort($sort)
+    {
+        $this->sort = $sort;
+        // Không nhất thiết phải reset trang, nhưng reset thì UX tốt hơn
+        $this->resetPage();
+    }
+
+    public function paginationView()
+    {
+        return 'Website::livewire.partials.pagination';
+    }
 
     // Reset phân trang về 1 khi đổi danh mục
     public function setCategory($slug)
@@ -64,42 +97,58 @@ class ProductList extends Component
         // session()->flash('message', "Đã thêm {$product->title} vào giỏ!");
     }
 
-    // public function render()
-    // {
-    //     $products = WpProduct::active()
-    //         ->latest()
-    //         ->paginate(12);
-
-    //     return view('Website::livewire.products.product-list', [
-    //         'products' => $products
-    //     ]);
-    // }
     public function render()
     {
-        // 1. Lấy danh sách danh mục CHA để hiển thị menu
-        $categories = Category::active()->root()->orderBy('sort_order')->get();
+        $query = WpProduct::active(); // Bỏ latest() ở đây để xử lý bên dưới
 
-        // 2. Query Sản phẩm cơ bản
-        $query = WpProduct::active()->latest();
+        // Logic Search (Giữ nguyên)
+        if (!empty($this->search)) {
+            $query->where(function($q) {
+                $q->where('title', 'like', '%' . $this->search . '%')
+                  ->orWhere('short_description', 'like', '%' . $this->search . '%');
+            });
+        }
 
-        // 3. Áp dụng Filter nếu có chọn danh mục
+        // Logic Category (Giữ nguyên)
         if ($this->categorySlug) {
             $category = Category::where('slug', $this->categorySlug)->first();
-
             if ($category) {
-                // TUÂN THỦ LUẬT: Lấy cả ID của danh mục con (Recursive)
                 $category->load('childrenRecursive');
                 $categoryIds = $category->getAllChildrenIds();
-
                 $query->whereHas('categories', fn ($q) =>
                     $q->whereIn('categories.id', $categoryIds)
                 );
             }
         }
 
+        // 3. LOGIC SẮP XẾP (SORTING)
+        switch ($this->sort) {
+            case 'price_asc':
+                // Sắp xếp theo giá thực tế (Ưu tiên Sale Price nếu có)
+                // COALESCE(sale_price, regular_price) -> Lấy sale_price, nếu null thì lấy regular_price
+                $query->orderByRaw('COALESCE(sale_price, regular_price) ASC');
+                break;
+
+            case 'price_desc':
+                $query->orderByRaw('COALESCE(sale_price, regular_price) DESC');
+                break;
+
+            case 'name_asc':
+                $query->orderBy('title', 'asc');
+                break;
+
+            case 'name_desc':
+                $query->orderBy('title', 'desc');
+                break;
+
+            case 'latest':
+            default:
+                $query->latest(); // created_at desc
+                break;
+        }
+
         return view('Website::livewire.products.product-list', [
-            'products' => $query->paginate(12),
-            'categories' => $categories // Truyền biến này ra View
+            'products' => $query->paginate(12)
         ]);
     }
 }

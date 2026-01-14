@@ -26,6 +26,10 @@ class CheckoutController extends Controller
             return redirect()->route('website.home');
         }
 
-        return view('Website::checkout.success');
+        $orderCode = session('order_code');
+        // Lấy thông tin đơn hàng để hiển thị số tiền và QR
+        $order = \Modules\Website\Models\Order::where('order_code', $orderCode)->first();
+
+        return view('Website::checkout.success', compact('order'));
     }
 }

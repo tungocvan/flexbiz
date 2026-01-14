@@ -49,7 +49,7 @@ class CreateModule extends Command
             $this->info('Module đã được tạo');
             $moduleDir = [
                 $name,
-                $name.'/Config',
+                $name.'/config',
                 $name.'/database',
                 $name.'/database/factories',
                 $name.'/database/migrations',
@@ -60,8 +60,8 @@ class CreateModule extends Command
                 $name.'/Http/Controllers/Api',
                 $name.'/Http/Middleware',
                 $name.'/Http/Requests',
-                $name.'/Http/Livewire',
                 $name.'/Http/Components',
+                $name.'/Livewire',
                 $name.'/Models',
                 $name.'/resources',
                 $name.'/resources/sass',
@@ -71,6 +71,7 @@ class CreateModule extends Command
                 $name.'/resources/views',
                 $name.'/resources/views/livewire',
                 $name.'/resources/views/components',
+                $name.'/Services',
                 $name.'/routes'
             ];
             foreach ($moduleDir as $value) {

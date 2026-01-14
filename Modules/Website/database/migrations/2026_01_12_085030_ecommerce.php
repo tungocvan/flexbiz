@@ -39,7 +39,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('slug')->nullable()->unique();
             $table->string('url')->nullable();
-            $table->string('icon')->nullable();
+            $table->text('icon')->nullable();
             $table->string('can')->nullable();
             $table->string('type')->nullable()->index(); // product, post, etc.
 
@@ -107,7 +107,10 @@ return new class extends Migration
             $table->decimal('discount', 10, 2)->default(0);
             $table->decimal('total', 10, 2);
 
+            $table->string('payment_method')->default('code');
             $table->string('status')->default('pending')->index();
+
+
             $table->timestamps();
         });
 
