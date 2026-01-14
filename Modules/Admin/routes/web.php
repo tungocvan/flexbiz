@@ -9,11 +9,12 @@ use Modules\Admin\Http\Controllers\MenuController;
 Route::middleware(['web'])->group(function () {
 
     // Auth Routes (Placeholder)
-    Route::get('login', [AuthController::class, 'login'])->name('login');
+    Route::get('login', [AuthController::class, 'login'])->name('login'); 
 
     // Protected Routes
-    Route::middleware([])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
+    Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         // === QUẢN LÝ MENU ===
         Route::prefix('menus')->name('menus.')->group(function() {
             Route::get('/', [MenuController::class, 'index'])->name('index');
