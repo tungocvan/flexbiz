@@ -1,10 +1,10 @@
 <div class="space-y-6">
-    
+
     <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 p-4 md:p-5">
         <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
-            
+
             <div class="flex flex-col md:flex-row w-full xl:w-auto gap-3">
-                
+
                 <div class="relative w-full md:w-24">
                     <select wire:model.live="perPage" class="block w-full rounded-lg border-0 py-2 pl-3 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 cursor-pointer bg-gray-50 hover:bg-white transition">
                         <option value="10">10</option>
@@ -19,11 +19,18 @@
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
                     </div>
-                    <select wire:model.live="category_id" class="block w-full rounded-lg border-0 py-2 pl-10 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 cursor-pointer bg-gray-50 hover:bg-white transition">
+
+                    <select wire:model.live="category_id"
+                            class="block w-full rounded-lg border-0 py-2 pl-10 pr-8 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 cursor-pointer bg-gray-50 hover:bg-white transition">
+
                         <option value="">Tất cả danh mục</option>
+
                         @foreach($this->categories as $cat)
-                            <option value="{{ $cat->id }}">{{ $cat->name }}</option>
+                            <option value="{{ $cat->id }}" class="{{ $cat->parent_id == null ? 'font-bold text-gray-900' : 'text-gray-600' }}">
+                                {{ $cat->view_name }}
+                            </option>
                         @endforeach
+
                     </select>
                 </div>
 
@@ -31,10 +38,10 @@
                     <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                         <svg class="h-5 w-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
                     </div>
-                    <input wire:model.live.debounce.300ms="search" type="text" 
-                        class="block w-full rounded-lg border-0 py-2 pl-10 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition" 
+                    <input wire:model.live.debounce.300ms="search" type="text"
+                        class="block w-full rounded-lg border-0 py-2 pl-10 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition"
                         placeholder="Tìm tên, mã sản phẩm...">
-                    
+
                     @if($search)
                         <button wire:click="clearSearch" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-red-500 cursor-pointer transition-colors">
                             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -79,8 +86,8 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-sm ring-1 ring-gray-900/5 overflow-hidden relative">
-        
-        <div wire:loading.flex wire:target="search, category_id, perPage, delete, duplicate, import, export, deleteSelected, applyCategories" 
+
+        <div wire:loading.flex wire:target="search, category_id, perPage, delete, duplicate, import, export, deleteSelected, applyCategories"
              class="absolute inset-0 bg-white/60 z-20 items-center justify-center backdrop-blur-[1px]">
             <svg class="animate-spin h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
         </div>
@@ -98,12 +105,12 @@
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                         Gán danh mục
                     </button>
-                    
+
                     <button wire:confirm="Xóa {{ count($selected) }} sản phẩm?" wire:click="deleteSelected" class="text-sm font-medium text-red-700 hover:text-red-900 bg-white px-3 py-1.5 rounded shadow-sm border border-red-200 flex items-center transition">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         Xóa tất cả
                     </button>
-                    
+
                     <button wire:click="$set('selected', [])" class="text-gray-400 hover:text-gray-600 transition">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
@@ -118,9 +125,9 @@
                         <th scope="col" class="relative px-6 py-3 w-10">
                             <input type="checkbox" wire:model.live="selectAll" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
                         </th>
-                        
+
                         @foreach(['title' => 'Sản phẩm', 'regular_price' => 'Giá bán', 'is_active' => 'Trạng thái'] as $field => $label)
-                            <th scope="col" wire:click="sortBy('{{ $field }}')" 
+                            <th scope="col" wire:click="sortBy('{{ $field }}')"
                                 class="px-6 py-3 text-left text-xs font-medium uppercase tracking-wide cursor-pointer group hover:bg-gray-100 transition select-none {{ $sortColumn === $field ? 'text-indigo-600 font-bold bg-indigo-50' : 'text-gray-500' }} {{ $field === 'is_active' ? 'text-center' : '' }}">
                                 <div class="flex items-center gap-1 {{ $field === 'is_active' ? 'justify-center' : '' }}">
                                     {{ $label }}
@@ -143,11 +150,11 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <input type="checkbox" wire:model.live="selected" value="{{ $item->id }}" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600">
                             </td>
-                            
+
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
                                     <div class="h-11 w-11 flex-shrink-0">
-                                        <img class="h-11 w-11 rounded-lg object-cover border border-gray-200" 
+                                        <img class="h-11 w-11 rounded-lg object-cover border border-gray-200"
                                              src="{{ $item->image ? (Illuminate\Support\Str::startsWith($item->image, ['http']) ? $item->image : asset('storage/'.$item->image)) : 'https://placehold.co/100' }}">
                                     </div>
                                     <div class="ml-4">
@@ -167,7 +174,7 @@
                             </td>
 
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <button wire:click="toggleStatus({{ $item->id }})" 
+                                <button wire:click="toggleStatus({{ $item->id }})"
                                     class="relative inline-flex h-5 w-9 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none {{ $item->is_active ? 'bg-green-500' : 'bg-gray-200' }}">
                                     <span class="pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $item->is_active ? 'translate-x-4' : 'translate-x-0' }}"></span>
                                 </button>
@@ -177,10 +184,10 @@
                                 <div class="flex flex-wrap gap-1.5">
                                     @forelse($item->categories as $cat)
                                         <span class="inline-flex items-center gap-x-0.5 rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 group hover:bg-blue-100 transition-colors">
-                                            
+
                                             {{ $cat->name }}
-                                            
-                                            <button type="button" 
+
+                                            <button type="button"
                                                     wire:click="removeCategory({{ $item->id }}, {{ $cat->id }})"
                                                     wire:confirm="Gỡ danh mục '{{ $cat->name }}' khỏi sản phẩm này?"
                                                     class="group relative -mr-1 h-3.5 w-3.5 rounded-sm hover:bg-blue-600/20 flex items-center justify-center transition-colors">

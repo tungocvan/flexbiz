@@ -5,6 +5,7 @@ namespace Modules\Website\Livewire\Products;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Session;
 use Modules\Website\Models\WpProduct;
 use Modules\Website\Models\Category;
@@ -14,72 +15,65 @@ use Modules\Website\Models\CartItem;
 class ProductList extends Component
 {
     use WithPagination;
-    // Biến lưu slug danh mục đang chọn (Mặc định null = Tất cả)
-    public $categorySlug = null;
+
+    // Giữ trạng thái trên URL để người dùng có thể copy link đã lọc
+    #[Url(history: true)]
     public $search = '';
+
+    #[Url(history: true)]
+    public $categorySlug = null;
+
+    #[Url(history: true)]
     public $sort = 'latest';
 
-    // LẮNG NGHE SỰ KIỆN TỪ CON
+    #[Url(history: true)]
+    public $price_range = ''; // Dạng chuỗi: "min-max"
+
+    public $selected_categories = []; // Dùng cho Checkbox Sidebar
+    public $view_mode = 'grid';
+
+    // LẮNG NGHE SỰ KIỆN
     #[On('search-updated')]
     public function updateSearch($search)
     {
         $this->search = $search;
-        $this->resetPage(); // Quan trọng: Reset về trang 1 khi tìm kiếm
+        $this->resetPage();
     }
 
-    // LẮNG NGHE SỰ KIỆN TỪ COMPONENT CON
-    #[On('filter-category-updated')]
-    public function updateCategoryFilter($slug)
-    {
-        $this->categorySlug = $slug;
-        $this->resetPage(); // Reset về trang 1 khi đổi filter
-    }
-
-    // 2. LẮNG NGHE SỰ KIỆN SORT
     #[On('sort-updated')]
     public function updateSort($sort)
     {
         $this->sort = $sort;
-        // Không nhất thiết phải reset trang, nhưng reset thì UX tốt hơn
         $this->resetPage();
     }
 
-    public function paginationView()
+    public function resetFilters()
     {
-        return 'Website::livewire.partials.pagination';
-    }
-
-    // Reset phân trang về 1 khi đổi danh mục
-    public function setCategory($slug)
-    {
-        $this->categorySlug = $slug;
+        $this->reset(['selected_categories', 'price_range', 'search', 'categorySlug']);
         $this->resetPage();
     }
-    // Hàm thêm vào giỏ hàng nhanh (Mặc định số lượng 1)
+
     public function addToCart($productId)
     {
         $product = WpProduct::find($productId);
         if (!$product) return;
 
         $sessionId = Session::getId();
-
-        // 1. Lấy hoặc tạo Cart
         $cart = Cart::firstOrCreate(
             ['session_id' => $sessionId],
             ['user_id' => auth()->id()]
         );
 
-        // 2. Check item trong cart
+        // final_price là accessor tính toán giá sau sale trong Model
+        $price = $product->sale_price > 0 ? $product->sale_price : $product->regular_price;
+
         $cartItem = CartItem::where('cart_id', $cart->id)
             ->where('product_id', $productId)
             ->first();
 
-        $price = $product->final_price;
-
         if ($cartItem) {
-            $cartItem->quantity += 1;
-            $cartItem->total = $cartItem->quantity * $price;
-            $cartItem->save();
+            $cartItem->increment('quantity');
+            $cartItem->update(['total' => $cartItem->quantity * $price]);
         } else {
             CartItem::create([
                 'cart_id' => $cart->id,
@@ -90,65 +84,76 @@ class ProductList extends Component
             ]);
         }
 
-        // 3. Dispatch event để update Cart Icon
         $this->dispatch('cart-updated');
-
-        // 4. Thông báo (Optional: Dùng thư viện toast hoặc session flash)
-        // session()->flash('message', "Đã thêm {$product->title} vào giỏ!");
     }
 
     public function render()
     {
-        $query = WpProduct::active(); // Bỏ latest() ở đây để xử lý bên dưới
+        // 1. Lấy Categories cho Sidebar Filter
+        $categories = Category::withCount('products')
+            ->whereNull('parent_id') // Lấy danh mục cha
+            ->where('type', 'product')
+            ->get();
 
-        // Logic Search (Giữ nguyên)
-        if (!empty($this->search)) {
-            $query->where(function($q) {
-                $q->where('title', 'like', '%' . $this->search . '%')
-                  ->orWhere('short_description', 'like', '%' . $this->search . '%');
+        // 2. Khởi tạo Query
+        $query = WpProduct::query()->where('is_active', true);
+
+        // Filter: Search
+        if ($this->search) {
+            $query->where(fn($q) =>
+                $q->where('title', 'like', "%{$this->search}%")
+                  ->orWhere('short_description', 'like', "%{$this->search}%")
+            );
+        }
+
+        // Filter: Categories (Ưu tiên Checkbox, sau đó đến Slug từ URL)
+       // LỌC THEO CATEGORY (Sửa ở đây)
+        if (!empty($this->selected_categories)) {
+            $query->whereHas('categories', function($q) {
+                $q->whereIn('categories.id', $this->selected_categories);
+            });
+        } elseif ($this->categorySlug) {
+            $query->whereHas('categories', function($q) {
+                $q->where('categories.slug', $this->categorySlug);
             });
         }
 
-        // Logic Category (Giữ nguyên)
-        if ($this->categorySlug) {
-            $category = Category::where('slug', $this->categorySlug)->first();
-            if ($category) {
-                $category->load('childrenRecursive');
-                $categoryIds = $category->getAllChildrenIds();
-                $query->whereHas('categories', fn ($q) =>
-                    $q->whereIn('categories.id', $categoryIds)
-                );
+        // Filter: Price Range (Xử lý chuỗi "min-max")
+        if ($this->price_range) {
+            $parts = explode('-', $this->price_range);
+            if (count($parts) == 2) {
+                $min = (int)$parts[0];
+                $max = (int)$parts[1];
+                // Lọc trên giá cuối cùng (Sale price nếu có, không thì Regular price)
+                $query->whereRaw('COALESCE(sale_price, regular_price) BETWEEN ? AND ?', [$min, $max]);
             }
         }
 
-        // 3. LOGIC SẮP XẾP (SORTING)
+        // 3. Sorting
         switch ($this->sort) {
             case 'price_asc':
-                // Sắp xếp theo giá thực tế (Ưu tiên Sale Price nếu có)
-                // COALESCE(sale_price, regular_price) -> Lấy sale_price, nếu null thì lấy regular_price
                 $query->orderByRaw('COALESCE(sale_price, regular_price) ASC');
                 break;
-
             case 'price_desc':
                 $query->orderByRaw('COALESCE(sale_price, regular_price) DESC');
                 break;
-
             case 'name_asc':
                 $query->orderBy('title', 'asc');
                 break;
-
-            case 'name_desc':
-                $query->orderBy('title', 'desc');
-                break;
-
             case 'latest':
             default:
-                $query->latest(); // created_at desc
+                $query->latest();
                 break;
         }
 
         return view('Website::livewire.products.product-list', [
-            'products' => $query->paginate(12)
+            'products' => $query->paginate(12),
+            'categories' => $categories // Truyền biến fix lỗi Undefined
         ]);
+    }
+
+    public function paginationView()
+    {
+        return 'Website::livewire.partials.pagination';
     }
 }

@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 
 class WpProduct extends Model
 {
@@ -35,6 +36,8 @@ class WpProduct extends Model
     {
         return $this->belongsToMany(Category::class, 'category_product', 'product_id', 'category_id');
     }
+
+
 
     /*
     |--------------------------------------------------------------------------
@@ -72,5 +75,34 @@ class WpProduct extends Model
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true);
+    }
+    // Trong Class WpProduct
+    public function getImageUrlAttribute()
+    {
+        // 1. Nếu là URL (bắt đầu bằng http)
+        if (str_starts_with($this->image, 'http')) {
+            return $this->image;
+        }
+
+        // 2. Nếu là đường dẫn local (products/xyz.png)
+        if ($this->image && Storage::disk('public')->exists($this->image)) {
+            return asset('storage/' . $this->image);
+        }
+
+        // 3. Ảnh mặc định nếu không tìm thấy
+        return asset('images/placeholder.jpg');
+    }
+
+    public function getGalleryUrlsAttribute()
+    {
+        // Ép kiểu mảng nếu dữ liệu đang là string JSON
+        $gallery = is_array($this->gallery) ? $this->gallery : json_decode($this->gallery, true);
+
+        if (!$gallery) return [];
+
+        return collect($gallery)->map(function ($path) {
+            if (str_starts_with($path, 'http')) return $path;
+            return asset('storage/' . $path);
+        })->toArray();
     }
 }

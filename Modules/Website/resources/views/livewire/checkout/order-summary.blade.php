@@ -5,7 +5,7 @@
         @foreach($items as $item)
             <div class="flex gap-3">
                 <div class="w-16 h-16 bg-white rounded border overflow-hidden shrink-0">
-                    <img src="{{ $item->product->image }}" class="w-full h-full object-cover">
+                    <img src="{{ $item->product->image_url }}" class="w-full h-full object-cover">
                 </div>
                 <div class="flex-1">
                     <h4 class="text-sm font-medium text-gray-800 line-clamp-2">{{ $item->product->title }}</h4>

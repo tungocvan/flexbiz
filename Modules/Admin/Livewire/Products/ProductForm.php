@@ -59,7 +59,11 @@ class ProductForm extends Component
 
     public function getCategoriesProperty()
     {
-        return Category::select('id', 'name')->orderBy('name')->get();
+        return \Modules\Website\Models\Category::where('type', 'product')
+            ->whereNull('parent_id') // Chỉ lấy ông Tổ
+            ->with(['children.children']) // Eager load con và cháu
+            ->orderBy('sort_order')
+            ->get();
     }
 
     // --- Logic TAGS ---

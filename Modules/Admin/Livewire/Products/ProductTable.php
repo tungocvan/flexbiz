@@ -32,7 +32,7 @@ class ProductTable extends Component
     // --- 4. MODALS STATE ---
     public $importFile;
     public $showImportModal = false;
-    
+
     public $showCategoryModal = false;
     public $bulkCategoryIds = [];
 
@@ -41,7 +41,35 @@ class ProductTable extends Component
     // ==========================================
     public function getCategoriesProperty()
     {
-        return Category::select('id', 'name')->where('type', 'product')->orderBy('name')->get();
+        // Lấy toàn bộ danh mục sản phẩm
+        $categories = Category::where('type', 'product')
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
+
+        // Chuyển đổi thành dạng cây phẳng (Flat Tree) để hiển thị trong Select
+        return collect($this->buildTreeOption($categories));
+    }
+
+    // 2. THÊM HÀM ĐỆ QUY TẠO VIEW NAME
+    private function buildTreeOption($categories, $parentId = null, $prefix = '')
+    {
+        $result = [];
+
+        foreach ($categories as $category) {
+            if ($category->parent_id == $parentId) {
+                // Tạo tên hiển thị có gạch đầu dòng
+                // Ví dụ: "Điện tử", "-- Laptop", "---- Gaming"
+                $category->view_name = $prefix . $category->name;
+
+                $result[] = $category;
+
+                // Gọi đệ quy cho con (thêm prefix dài hơn)
+                $children = $this->buildTreeOption($categories, $category->id, $prefix . '— '); // Dùng dấu gạch dài em-dash cho đẹp
+                $result = array_merge($result, $children);
+            }
+        }
+        return $result;
     }
 
     // ==========================================
@@ -167,7 +195,7 @@ class ProductTable extends Component
         ]);
 
         Excel::import(new ProductsImport, $this->importFile);
-        
+
         $this->showImportModal = false;
         $this->importFile = null;
     }
@@ -194,7 +222,7 @@ class ProductTable extends Component
     public function removeCategory($productId, $categoryId)
     {
         $product = WpProduct::find($productId);
-        
+
         if ($product) {
             // detach: Chỉ gỡ mối quan hệ, không xóa danh mục gốc
             $product->categories()->detach($categoryId);
@@ -204,9 +232,9 @@ class ProductTable extends Component
     public function render()
     {
         $query = $this->getProductsQuery();
-        
-        $products = $this->perPage === 'all' 
-            ? $query->paginate(999999) 
+
+        $products = $this->perPage === 'all'
+            ? $query->paginate(999999)
             : $query->paginate($this->perPage);
 
         return view('Admin::livewire.products.product-table', [

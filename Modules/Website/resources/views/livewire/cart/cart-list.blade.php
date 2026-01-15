@@ -6,8 +6,9 @@
             <div class="lg:col-span-2 space-y-4">
                 @foreach($items as $item)
                     <div class="flex items-center gap-4 bg-white p-4 rounded-lg shadow">
-                        <img src="{{ $item->product->image }}" class="w-20 h-20 object-cover rounded">
 
+                        <img src="{{ $item->product->image_url ?? asset('images/placeholder.jpg') }}"
+                                             alt="{{ $item->product->title }}" class="w-20 h-20 object-cover rounded">`
                         <div class="flex-1">
                             <h3 class="font-bold text-gray-800">{{ $item->product->title }}</h3>
                             <p class="text-gray-500 text-sm">{{ number_format($item->price) }}đ</p>

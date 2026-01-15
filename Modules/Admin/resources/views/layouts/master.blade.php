@@ -28,7 +28,7 @@
        </body>
 
         <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
-            <header class="bg-white shadow h-16 flex justify-between items-center px-6">
+            {{-- <header class="bg-white shadow h-16 flex justify-between items-center px-6">
                 <button @click="sidebarOpen = !sidebarOpen" class="text-gray-500 focus:outline-none">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -36,8 +36,8 @@
                     </svg>
                 </button>
                 <div class="font-semibold text-gray-700">Admin User</div>
-            </header>
-
+            </header> --}}
+            <livewire:admin.partials.header />
             <main class="flex-1 overflow-auto p-6">
                 @isset($slot)
                     {{ $slot }}
