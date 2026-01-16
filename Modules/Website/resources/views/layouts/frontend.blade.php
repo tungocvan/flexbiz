@@ -3,10 +3,19 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Ecommerce Website</title>
+    @php
+        use Modules\Website\Models\Setting;
+        $favicon = Setting::getValue('site_favicon');
+    @endphp
+    @if($favicon)
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $favicon) }}">
+    @endif
+    <title>@yield('title','HOMEPAGE')</title>
+    {!! Setting::getValue('header_script') !!}
 
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+    {{-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> --}}
 
+    @vite(['resources/css/tailwind.css', 'resources/js/tailwind.js'])
     @livewireStyles
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased flex flex-col min-h-screen">

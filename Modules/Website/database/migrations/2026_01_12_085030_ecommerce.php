@@ -92,24 +92,28 @@ return new class extends Migration
             $table->timestamps();
         });
 
-        // 7. Bảng Orders (Tên bảng là wp_orders để tránh trùng keywords)
+        // 7. Bảng Orders
         Schema::create('wp_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
-            $table->string('order_code')->unique();
+            $table->string('order_code')->unique(); // VD: ORD-20231001-001
+
+            // Thông tin khách hàng (Snapshot)
             $table->string('customer_name');
             $table->string('customer_phone');
             $table->string('customer_email')->nullable();
             $table->string('customer_address');
-            $table->text('note')->nullable();
+            $table->text('note')->nullable(); // Ghi chú của khách
 
-            $table->decimal('subtotal', 10, 2);
-            $table->decimal('discount', 10, 2)->default(0);
-            $table->decimal('total', 10, 2);
+            // Tiền tệ
+            $table->decimal('subtotal', 15, 2);      // Tổng tiền hàng
+            $table->decimal('shipping_fee', 15, 2)->default(0); // <--- MỚI: Phí ship
+            $table->decimal('discount', 15, 2)->default(0);     // Giảm giá
+            $table->decimal('total', 15, 2);         // Tổng thanh toán
 
-            $table->string('payment_method')->default('code');
-            $table->string('status')->default('pending')->index();
-
+            // Trạng thái
+            $table->string('payment_method')->default('cod'); // Sửa 'code' -> 'cod'
+            $table->string('status')->default('pending')->index(); // pending, processing, shipping, completed, cancelled
 
             $table->timestamps();
         });
@@ -119,10 +123,15 @@ return new class extends Migration
             $table->id();
             $table->foreignId('order_id')->constrained('wp_orders')->cascadeOnDelete();
             $table->foreignId('product_id')->nullable()->constrained('wp_products')->nullOnDelete();
+
+            // Snapshot sản phẩm
             $table->string('product_name');
-            $table->decimal('price', 10, 2);
+            $table->decimal('price', 15, 2);
             $table->integer('quantity');
-            $table->decimal('total', 10, 2);
+            $table->decimal('total', 15, 2); // price * quantity
+
+            $table->json('options')->nullable(); // <--- MỚI: Lưu Size, Màu (JSON)
+
             $table->timestamps();
         });
     }

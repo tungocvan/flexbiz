@@ -6,6 +6,9 @@ use Modules\Admin\Http\Controllers\AuthController;
 use Modules\Admin\Http\Controllers\ProductController;
 use Modules\Admin\Http\Controllers\MenuController;
 use Modules\Admin\Http\Controllers\CategoryController;
+use Modules\Admin\Http\Controllers\OrderController;
+use Modules\Admin\Http\Controllers\SettingController;
+
 
 Route::middleware(['web'])->group(function () {
 
@@ -35,6 +38,17 @@ Route::middleware(['web'])->group(function () {
             Route::get('/{id}/edit', [CategoryController::class, 'edit'])->name('edit');
         });
 
+
+
+        Route::prefix('orders')->name('orders.')->group(function() {
+            Route::get('/', [OrderController::class, 'index'])->name('index');
+            Route::get('/{id}', [OrderController::class, 'show'])->name('show');
+            Route::get('/{id}/print', [OrderController::class, 'print'])->name('print');
+            Route::get('/{id}/pdf', [OrderController::class, 'exportPdf'])->name('pdf');
+        });
+
+        // Thêm vào trong group prefix 'admin'
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
     });
 
 

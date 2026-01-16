@@ -3,19 +3,30 @@
 namespace Modules\Website\database\Seeders;
 
 use Illuminate\Database\Seeder;
+// Import các Class Seeder
+use Modules\Website\database\Seeders\UserSeeder;
 use Modules\Website\database\Seeders\CategorySeeder;
 use Modules\Website\database\Seeders\ProductSeeder;
-
+use Modules\Website\database\Seeders\OrderSeeder;
 
 class WebsiteDatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Gọi theo thứ tự: Danh mục trước -> Sản phẩm sau
-        // php artisan db:seed --class="Modules\Website\database\Seeders\WebsiteDatabaseSeeder"
+        // Chạy lệnh: php artisan db:seed --class="Modules\Website\database\Seeders\WebsiteDatabaseSeeder"
+
         $this->call([
+            // 1. Tạo người dùng trước
+            UserSeeder::class,
+
+            // 2. Tạo danh mục
             CategorySeeder::class,
+
+            // 3. Tạo sản phẩm (gắn với danh mục)
             ProductSeeder::class,
+
+            // 4. Tạo đơn hàng (gắn với User và Sản phẩm)
+            OrderSeeder::class,
         ]);
     }
 }

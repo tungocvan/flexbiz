@@ -1,1 +1,4 @@
-import '../css/tailwind.css';
+// Ví dụ: Import font hoặc các script UI khác
+// import 'flowbite';
+
+//console.log('Tailwind JS loaded');

@@ -1,1 +1,9 @@
 @import "tailwindcss";
+
+/* Nếu bạn muốn tùy chỉnh theme (VD: màu, font),
+   bạn viết trực tiếp vào đây thay vì tailwind.config.js
+*/
+@theme {
+  --color-primary: #4f46e5;
+  --font-display: "Satoshi", "sans-serif";
+}

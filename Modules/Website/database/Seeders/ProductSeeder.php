@@ -11,7 +11,7 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $count = 20; // Số lượng sản phẩm mẫu
+        $count = 40; // Số lượng sản phẩm mẫu
 
         // Ảnh placeholder để test giao diện
         $imageUrl = 'https://placehold.co/600x600/png?text=Product+Img';

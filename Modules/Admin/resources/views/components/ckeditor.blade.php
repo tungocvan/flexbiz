@@ -1,4 +1,4 @@
-@props(['label', 'placeholder' => ''])
+@props(['id','label' => null, 'placeholder' => ''])
 @once
     <script src="https://cdn.ckeditor.com/ckeditor5/39.0.1/classic/ckeditor.js"></script>
     <style>

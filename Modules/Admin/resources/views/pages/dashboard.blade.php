@@ -1,11 +1,22 @@
 @extends('Admin::layouts.master')
+@section('title', 'Dashboard')
 
 @section('content')
-    <h1 class="text-2xl font-bold mb-6 text-gray-800">Tổng quan hệ thống</h1>
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900">Tổng quan hệ thống</h1>
+        <p class="mt-1 text-sm text-gray-500">Chào mừng trở lại! Dưới đây là tình hình kinh doanh hôm nay.</p>
+    </div>
 
     @livewire('admin.dashboard.stats-overview')
 
-    <div class="mt-8">
-        <p class="text-gray-500">Khu vực hiển thị biểu đồ hoặc danh sách đơn hàng mới nhất...</p>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <div class="lg:col-span-2">
+            @livewire('admin.dashboard.revenue-chart')
+        </div>
+
+        <div class="lg:col-span-1">
+            @livewire('admin.dashboard.recent-orders')
+        </div>
     </div>
 @endsection
