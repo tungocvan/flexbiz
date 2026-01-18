@@ -75,6 +75,18 @@ class MenuForm extends Component
         return redirect()->route('admin.menus.index');
     }
 
+    public function increaseOrder()
+    {
+        $this->sort_order++;
+    }
+
+    public function decreaseOrder()
+    {
+        // Kiểm tra để không bị âm (nếu muốn)
+        if ($this->sort_order > 0) {
+            $this->sort_order--;
+        }
+    }
     public function render()
     {
         return view('Admin::livewire.menus.menu-form');

@@ -11,10 +11,10 @@
         <link rel="icon" type="image/png" href="{{ asset('storage/' . $favicon) }}">
     @endif
     <title>@yield('title','HOMEPAGE')</title>
-    {!! Setting::getValue('header_script') !!}
+    {!! Setting::getValue('header_script') !!} 
 
     {{-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> --}}
-
+    @yield('css')
     @vite(['resources/css/tailwind.css', 'resources/js/tailwind.js'])
     @livewireStyles
 </head>

@@ -110,11 +110,11 @@
                 <div class="mb-5">
                     <label class="block text-sm font-medium leading-6 text-gray-900 mb-2">Thứ tự hiển thị</label>
                     <div class="flex items-center">
-                        <button type="button" wire:click="$decrement('sort_order')" class="p-2 border border-gray-300 rounded-l-md bg-gray-50 hover:bg-gray-100 text-gray-500">
+                        <button type="button" wire:click="decreaseOrder"  class="p-2 border border-gray-300 rounded-l-md bg-gray-50 hover:bg-gray-100 text-gray-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
                         </button>
                         <input wire:model="sort_order" type="number" class="block w-full text-center border-y border-gray-300 py-2 text-gray-900 focus:ring-0 sm:text-sm font-bold border-x-0">
-                        <button type="button" wire:click="$increment('sort_order')" class="p-2 border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100 text-gray-500">
+                        <button type="button" wire:click="increaseOrder"  class="p-2 border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100 text-gray-500">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                         </button>
                     </div>

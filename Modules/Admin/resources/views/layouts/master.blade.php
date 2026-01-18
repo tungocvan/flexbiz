@@ -4,10 +4,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin System</title>
-
+    @php
+        use Modules\Website\Models\Setting;
+        $favicon = Setting::getValue('site_favicon');
+    @endphp
+    @if($favicon)
+        <link rel="icon" type="image/png" href="{{ asset('storage/' . $favicon) }}">
+    @endif
+    <title>@yield('title','HOMEPAGE')</title>
+    {!! Setting::getValue('header_script') !!}
+    @yield('css')
     <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-
+    {{-- @vite(['resources/css/tailwind.css', 'resources/js/tailwind.js']) --}}
 
     @livewireStyles
 </head>
