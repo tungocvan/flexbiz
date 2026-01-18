@@ -69,21 +69,36 @@ class RoleTable extends Component
         
         $json = json_decode(file_get_contents($this->importFile->getRealPath()), true);
         
+        // 1. Xóa Cache phân quyền trước khi import để tránh xung đột
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         DB::transaction(function () use ($json) {
             foreach ($json as $item) {
-                // 1. Tạo Role
-                $role = Role::firstOrCreate(['name' => $item['name']], ['guard_name' => $item['guard_name'] ?? 'web']);
+                $guardName = $item['guard_name'] ?? 'web';
+
+                // 2. Tạo hoặc Lấy Role (theo đúng guard)
+                $role = Role::firstOrCreate(
+                    ['name' => $item['name']], 
+                    ['guard_name' => $guardName]
+                );
                 
-                // 2. Tạo Permission nếu chưa có (Tránh lỗi)
                 if (!empty($item['permissions'])) {
+                    // 3. VÒNG LẶP QUAN TRỌNG: Tạo Permission nếu chưa có
                     foreach ($item['permissions'] as $permName) {
-                        Permission::firstOrCreate(['name' => $permName]);
+                        Permission::firstOrCreate(
+                            ['name' => $permName, 'guard_name' => $guardName]
+                        );
                     }
-                    // 3. Gán quyền
+                    
+                    // 4. Gán danh sách quyền cho Role
+                    // Lúc này chắc chắn quyền đã tồn tại trong DB nên sẽ không lỗi nữa
                     $role->syncPermissions($item['permissions']);
                 }
             }
         });
+
+        // 5. Xóa Cache lại lần nữa sau khi xong
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         $this->showImportModal = false;
         $this->dispatch('notify', content: 'Import cấu hình phân quyền thành công.', type: 'success');
