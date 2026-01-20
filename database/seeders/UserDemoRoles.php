@@ -19,23 +19,9 @@ class UserDemoRoles extends Seeder
             'email' => 'tungocvan@gmail.com',
             'password' => bcrypt('123456'),
         ]);
-        $role = Role::findByName('admin');
+        $role = Role::findByName('Super Admin');
         $userAdmin->assignRole($role);
 
-        $editor = User::factory()->create([
-            'name' => 'Từ Ngọc Vân 1',
-            'email' => 'tungocvan1@gmail.com',
-            'password' => bcrypt('123456'),
-        ]);
-        $role = Role::findByName('editor');
-        $editor->assignRole($role);
-
-        $user = User::factory()->create([
-            'name' => 'Từ Ngọc Vân 2',
-            'email' => 'tungocvan2@gmail.com',
-            'password' => bcrypt('123456'),
-        ]);
-        $role = Role::findByName('user');
-        $user->assignRole($role);
+       
     }
 }

@@ -2,63 +2,41 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
-    public function run(): void
+    public function run()
     {
-        // Create roles
-        // $adminRole = Role::create(['name' => 'admin']);
-        // $editorRole = Role::create(['name' => 'editor']);
-        // $userRole = Role::create(['name' => 'user']);
-
-        // // Create permissions
-        // $listPostPermission = Permission::create(['name' => 'user-list']);
-        // $createPostPermission = Permission::create(['name' => 'user-create']);
-        // $editPostPermission = Permission::create(['name' => 'user-edit']);
-        // $deletePostPermission = Permission::create(['name' => 'user-delete']);
-
-        // Assign permissions to roles
-        // $adminRole->givePermissionTo($listPostPermission);
-        // $adminRole->givePermissionTo($createPostPermission);
-        // $adminRole->givePermissionTo($editPostPermission);
-        // $adminRole->givePermissionTo($deletePostPermission);
-
-
-        // $editorRole->givePermissionTo($listPostPermission);
-        // $editorRole->givePermissionTo($createPostPermission);
-        // $editorRole->givePermissionTo($editPostPermission);
-
-        // $userRole->givePermissionTo($listPostPermission);
+        // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Danh sách quyền (Format: group_name => [actions])
-        $modules = [
-            'dashboard' => ['view'],
-            'product'   => ['view', 'create', 'edit', 'delete'],
-            'order'     => ['view', 'edit', 'delete'],
-            'customer'  => ['view', 'create', 'edit', 'delete'],
-            'coupon'    => ['view', 'create', 'edit', 'delete'],
-            'staff'     => ['view', 'create', 'edit', 'delete'],
-            'role'      => ['view', 'create', 'edit', 'delete'],
-            'setting'   => ['view', 'edit'],
+        // Danh sách quyền
+        $actions = [
+            'view_dashboard',
+            'view_product', 'create_product', 'edit_product', 'delete_product',
+            'view_order', 'edit_order', 'delete_order',
+            'view_customer', 'create_customer', 'edit_customer', 'delete_customer',
+            'view_role', 'create_role', 'edit_role', 'delete_role',
+            'view_staff', 'create_staff', 'edit_staff', 'delete_staff',
+            'view_coupon', 'create_coupon', 'edit_coupon', 'delete_coupon'
         ];
 
-        foreach ($modules as $module => $actions) {
-            foreach ($actions as $action) {
-                Permission::firstOrCreate(['name' => $action . '_' . $module]);
-            }
+        // 1. Tạo Permissions (cho cả web và admin để an toàn)
+        foreach ($actions as $action) {
+            Permission::firstOrCreate(['name' => $action, 'guard_name' => 'web']);
+            Permission::firstOrCreate(['name' => $action, 'guard_name' => 'admin']);
         }
 
-        // Tạo Role mặc định: Super Admin
-        $role = Role::firstOrCreate(['name' => 'Super Admin']);
-        $role->givePermissionTo(Permission::all());
+        // 2. Tạo Role Super Admin chuẩn cho guard 'admin'
+        $roleAdmin = Role::firstOrCreate(['name' => 'Super Admin', 'guard_name' => 'admin']);
+        // Gán full quyền (lấy các quyền thuộc guard admin)
+        $roleAdmin->givePermissionTo(Permission::where('guard_name', 'admin')->get());
+
+        // 3. Tạo Role Super Admin cho guard 'web' (nếu cần fallback)
+        $roleWeb = Role::firstOrCreate(['name' => 'Super Admin', 'guard_name' => 'web']);
+        $roleWeb->givePermissionTo(Permission::where('guard_name', 'web')->get());
     }
 }

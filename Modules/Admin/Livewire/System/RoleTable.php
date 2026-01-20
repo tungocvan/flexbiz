@@ -8,6 +8,7 @@ use Livewire\WithFileUploads;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class RoleTable extends Component
 {
@@ -21,6 +22,69 @@ class RoleTable extends Component
     public $showImportModal = false;
     public $importFile;
 
+    // --- VARIABLES CHO ADD MODULE ---
+    public $showPermissionModal = false;
+    public $newModuleName = '';
+    public $newModuleActions = [
+        'view' => true,
+        'create' => true,
+        'edit' => true,
+        'delete' => true,
+        'export' => false, // Mặc định tắt
+    ];
+    // --- LOGIC MỚI: TẠO MODULE QUYỀN ---
+    
+    public function openPermissionModal()
+    {
+        $this->reset(['newModuleName']);
+        $this->newModuleActions = [
+            'view' => true, 'create' => true, 'edit' => true, 'delete' => true, 'export' => false
+        ];
+        $this->showPermissionModal = true;
+    }
+
+    public function createModulePermissions()
+    {
+        $this->validate([
+            'newModuleName' => 'required|alpha_dash|min:3', // Chỉ cho phép chữ cái, số, gạch ngang
+        ], [
+            'newModuleName.required' => 'Vui lòng nhập tên Module (VD: blog, marketing)',
+            'newModuleName.alpha_dash' => 'Tên module không được chứa khoảng trắng hoặc ký tự đặc biệt.',
+        ]);
+
+        // Chuẩn hóa tên module: blog_post -> blog_post
+        $module = Str::lower($this->newModuleName);
+        $guard = 'admin'; // Cố định guard admin
+        $createdCount = 0;
+
+        DB::transaction(function () use ($module, $guard, &$createdCount) {
+            foreach ($this->newModuleActions as $action => $isSelected) {
+                if ($isSelected) {
+                    // Tạo quyền: action_module (VD: view_blog)
+                    $permName = $action . '_' . $module;
+                    
+                    $perm = Permission::firstOrCreate(
+                        ['name' => $permName, 'guard_name' => $guard]
+                    );
+                    
+                    if ($perm->wasRecentlyCreated) {
+                        $createdCount++;
+                    }
+                }
+            }
+        });
+
+        // Xóa cache của Spatie để hệ thống nhận diện quyền mới ngay lập tức
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
+        $this->showPermissionModal = false;
+        
+        if ($createdCount > 0) {
+            $this->dispatch('notify', content: "Đã tạo {$createdCount} quyền mới cho module '{$module}'.", type: 'success');
+        } else {
+            $this->dispatch('notify', content: "Các quyền của module '{$module}' đã tồn tại từ trước.", type: 'warning');
+        }
+    }
     // Reset & Select logic (Giống CustomerTable - Tôi lược bỏ cho ngắn gọn, bạn copy từ CustomerTable sang nhé)
     // ... include: updatedSearch, updatingPage, updatedSelectAll, resetSelection ...
 

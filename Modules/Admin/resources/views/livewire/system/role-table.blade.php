@@ -21,6 +21,10 @@
                 <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Tạo vai trò mới
             </a>
+            <button wire:click="openPermissionModal" class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition">
+                <svg class="w-4 h-4 mr-2 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                Thêm Module Quyền
+            </button>
         </div>
     </div>
 
@@ -161,7 +165,7 @@
                         <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
                             <svg class="h-6 w-6 text-indigo-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                             Import Cấu hình Vai trò (JSON)
-                        </h3>
+                        </h3> 
                         <div class="space-y-4">
                             <p class="text-sm text-gray-500">File JSON cần chứa danh sách Roles và Permissions tương ứng.</p>
                             <label class="block w-full rounded-xl border-2 border-dashed border-gray-300 p-8 text-center hover:bg-gray-50 hover:border-indigo-400 cursor-pointer transition">
@@ -183,4 +187,68 @@
         </div>
     </div>
 
+    <div x-data="{ show: @entangle('showPermissionModal') }" x-show="show" style="display: none;" class="relative z-50">
+        <div class="fixed inset-0 bg-gray-900/50 backdrop-blur-sm transition-opacity" @click="show = false"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4">
+                
+                <div class="relative transform overflow-hidden rounded-xl bg-white shadow-xl transition-all w-full max-w-md">
+                    
+                    <div class="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                        <h3 class="text-lg font-bold text-gray-900 flex items-center">
+                            <span class="bg-indigo-100 text-indigo-600 p-1.5 rounded-lg mr-2">
+                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14v6m-3-3h6M6 10h2a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2zm10 0h2a2 2 0 002-2V6a2 2 0 00-2-2h-2a2 2 0 00-2 2v2a2 2 0 002 2zM6 20h2a2 2 0 002-2v-2a2 2 0 00-2-2H6a2 2 0 00-2 2v2a2 2 0 002 2z"/></svg>
+                            </span>
+                            Thêm Module Mới
+                        </h3>
+                        <button @click="show = false" class="text-gray-400 hover:text-gray-600"><svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
+                    </div>
+
+                    <div class="p-6 space-y-6">
+                        
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1">Tên Module (Tiếng Anh, không dấu) <span class="text-red-500">*</span></label>
+                            <input type="text" wire:model.live="newModuleName" 
+                                    class="w-full p-2 rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 shadow-sm"
+                                   placeholder="VD: blog, marketing, report...">
+                            @error('newModuleName') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                            
+                            @if($newModuleName)
+                                <div class="mt-2 text-xs text-gray-500 bg-gray-50 p-2 rounded border border-gray-200">
+                                    Sẽ tạo: 
+                                    <span class="font-mono text-indigo-600">view_{{ $newModuleName }}</span>, 
+                                    <span class="font-mono text-indigo-600">create_{{ $newModuleName }}</span>...
+                                </div>
+                            @endif
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-3">Chọn các hành động cần tạo:</label>
+                            <div class="grid grid-cols-2 gap-3">
+                                @foreach(['view' => 'Xem (View)', 'create' => 'Thêm (Create)', 'edit' => 'Sửa (Edit)', 'delete' => 'Xóa (Delete)', 'export' => 'Xuất (Export)'] as $key => $label)
+                                    <label class="flex items-center space-x-3 p-2 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $newModuleActions[$key] ? 'border-indigo-200 bg-indigo-50' : '' }}">
+                                        <input type="checkbox" wire:model="newModuleActions.{{ $key }}" class="h-4 w-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
+                                        <span class="text-sm text-gray-700 select-none">{{ $label }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="bg-gray-50 px-6 py-4 flex justify-end gap-3 border-t border-gray-100">
+                        <button type="button" @click="show = false" class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition">Hủy bỏ</button>
+                        <button type="button" wire:click="createModulePermissions" wire:loading.attr="disabled" class="px-4 py-2 bg-indigo-600 rounded-lg text-sm font-bold text-white hover:bg-indigo-700 shadow-sm transition flex items-center">
+                            <span wire:loading.remove wire:target="createModulePermissions">Tạo ngay</span>
+                            <span wire:loading wire:target="createModulePermissions" class="flex items-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                Xử lý...
+                            </span>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

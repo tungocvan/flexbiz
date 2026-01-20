@@ -20,7 +20,7 @@ Route::middleware(['web'])->group(function () {
     Route::get('login', [AuthController::class, 'login'])->name('login');
 
     // Protected Routes
-    Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
+    Route::middleware(['web','auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         // === QUẢN LÝ MENU ===

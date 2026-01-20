@@ -3,154 +3,64 @@
 namespace Modules\Admin\Livewire\Menus;
 
 use Livewire\Component;
-use Livewire\WithFileUploads;
 use Modules\Website\Models\Category;
-use Illuminate\Support\Facades\DB;
 
 class MenuTable extends Component
 {
-    use WithFileUploads; // <--- 2. Sử dụng Trait upload
-
-    public $importFile; // Biến chứa file upload
-    public $isImporting = false; // Trạng thái hiển thị khung import
-
-    // --- LOGIC EXPORT (XUẤT RA FILE JSON) ---
-    public function export()
-    {
-        // Lấy dữ liệu đầy đủ
-        $menus = Category::where('type', 'menu')
-            ->whereNull('parent_id')
-            ->with(['children' => function($q) {
-                $q->orderBy('sort_order', 'asc');
-            }])
-            ->orderBy('sort_order', 'asc')
-            ->get()
-            ->makeHidden(['created_at', 'updated_at', 'id', 'parent_id']); // Ẩn các trường không cần thiết khi export
-
-        $fileName = 'menu-backup-' . date('Y-m-d-His') . '.json';
-
-        // Download file về máy
-        return response()->streamDownload(function () use ($menus) {
-            echo $menus->toJson(JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
-        }, $fileName);
-    }
-
-    // --- LOGIC IMPORT (NHẬP TỪ FILE JSON) ---
-    public function import()
-    {
-        $this->validate([
-            'importFile' => 'required|mimes:json,txt|max:1024',
-        ]);
-
-        try {
-            $jsonContent = file_get_contents($this->importFile->getRealPath());
-            $data = json_decode($jsonContent, true);
-
-            if (!is_array($data)) {
-                $this->addError('importFile', 'File JSON không hợp lệ.');
-                return;
-            }
-
-            DB::beginTransaction();
-
-            $countNew = 0; // Đếm số menu mới thêm
-            $countSkip = 0; // Đếm số menu bị bỏ qua
-
-            foreach ($data as $parentItem) {
-                // 1. XỬ LÝ MENU CHA
-                // Kiểm tra tồn tại: Cùng tên, cùng URL, và là menu cha (parent_id null)
-                $parent = Category::where('type', 'menu')
-                    ->where('name', $parentItem['name'])
-                    ->where('url', $parentItem['url'] ?? '#')
-                    ->whereNull('parent_id')
-                    ->first();
-
-                // Nếu chưa có -> Tạo mới
-                if (!$parent) {
-                    $parent = Category::create([
-                        'type'       => 'menu',
-                        'name'       => $parentItem['name'],
-                        'icon'       => $parentItem['icon'] ?? null,
-                        'url'        => $parentItem['url'] ?? '#',
-                        'sort_order' => $parentItem['sort_order'] ?? 0,
-                        'is_active'  => $parentItem['is_active'] ?? true,
-                        'parent_id'  => null,
-                    ]);
-                    $countNew++;
-                } else {
-                    // Nếu đã có -> Đánh dấu skip, nhưng VẪN GIỮ BIẾN $parent 
-                    // để kiểm tra tiếp các con của nó.
-                    $countSkip++;
-                }
-
-                // 2. XỬ LÝ MENU CON (nếu có)
-                if (!empty($parentItem['children']) && $parent) {
-                    foreach ($parentItem['children'] as $childItem) {
-                        
-                        // Kiểm tra tồn tại: Cùng tên, cùng URL, và PHẢI THUỘC ĐÚNG CHA
-                        $childExists = Category::where('type', 'menu')
-                            ->where('name', $childItem['name'])
-                            ->where('url', $childItem['url'] ?? '#')
-                            ->where('parent_id', $parent->id) 
-                            ->exists();
-
-                        if (!$childExists) {
-                            Category::create([
-                                'type'       => 'menu',
-                                'name'       => $childItem['name'],
-                                'icon'       => $childItem['icon'] ?? null,
-                                'url'        => $childItem['url'] ?? '#',
-                                'sort_order' => $childItem['sort_order'] ?? 0,
-                                'is_active'  => $childItem['is_active'] ?? true,
-                                'parent_id'  => $parent->id, // Gắn vào ID cha (dù cha mới hay cũ)
-                            ]);
-                            $countNew++;
-                        } else {
-                            $countSkip++;
-                        }
-                    }
-                }
-            }
-
-            DB::commit();
-
-            $this->importFile = null;
-            $this->isImporting = false;
-            
-            // Thông báo chi tiết
-            session()->flash('success', "Import hoàn tất! Đã thêm mới: $countNew, Bỏ qua (trùng): $countSkip.");
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            $this->addError('importFile', 'Lỗi: ' . $e->getMessage());
-        }
-    }
+    // Xóa Menu
     public function delete($id)
     {
-        // Xóa menu, nếu có con thì con sẽ set parent_id = null (do database config)
-        Category::destroy($id);
+        Category::find($id)->delete();
+        $this->dispatch('notify', content: 'Đã xóa menu.', type: 'success');
     }
 
+    // Toggle Ẩn/Hiện
     public function toggleStatus($id)
     {
         $menu = Category::find($id);
-        $menu->is_active = !$menu->is_active;
-        $menu->save();
+        if ($menu) {
+            $menu->update(['is_active' => !$menu->is_active]);
+            $this->dispatch('notify', content: 'Đã cập nhật trạng thái.', type: 'success');
+        }
+    }
+
+    // --- LOGIC KÉO THẢ QUAN TRỌNG ---
+    public function updateMenuOrder($list)
+    {
+        // $list là mảng phân cấp được gửi từ JS
+        // Structure: [{id: 1, children: [{id: 2}, {id: 3}]}, {id: 4}]
+        
+        $this->updateRecursive($list, null);
+        
+        $this->dispatch('notify', content: 'Đã lưu cấu trúc menu mới.', type: 'success');
+    }
+
+    private function updateRecursive($items, $parentId)
+    {
+        foreach ($items as $index => $item) {
+            // Cập nhật cha và thứ tự
+            Category::where('id', $item['id'])->update([
+                'parent_id' => $parentId,
+                'sort_order' => $index
+            ]);
+
+            // Nếu có con, đệ quy tiếp
+            if (isset($item['children']) && !empty($item['children'])) {
+                $this->updateRecursive($item['children'], $item['id']);
+            }
+        }
     }
 
     public function render()
     {
-        // Lấy menu Cha, kèm theo con, sắp xếp theo sort_order
-        $menus = Category::where('type', 'menu')
-            ->whereNull('parent_id')
-            ->with(['children' => function($q) {
-                $q->orderBy('sort_order', 'asc');
-            }])
-            ->orderBy('sort_order', 'asc')
+        // Lấy toàn bộ menu, sắp xếp theo thứ tự
+        // Chúng ta lấy dạng phẳng (Flat), việc phân cấp sẽ do View xử lý
+        $menus = Category::menu()
+            ->with('children') // Eager load để tối ưu
+            ->whereNull('parent_id') // Lấy gốc trước
+            ->orderBy('sort_order')
             ->get();
 
-        return view('Admin::livewire.menus.menu-table', [
-            'menus' => $menus
-        ]);
+        return view('Admin::livewire.menus.menu-table', ['menus' => $menus]);
     }
 }

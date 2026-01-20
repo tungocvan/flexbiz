@@ -5,9 +5,10 @@ namespace Modules\Admin\Http\Controllers;
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-
+ 
 class PostController extends Controller
 {
+  
     /**
      * Danh sách bài viết
      */

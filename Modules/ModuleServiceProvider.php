@@ -1,8 +1,9 @@
 <?php
-
+ 
 namespace Modules;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Route;
@@ -18,10 +19,14 @@ class ModuleServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+       
         $modules = $this->getModules();
         foreach ($modules as $module) {
             $this->registerModule($module);
         }
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('Super Admin') ? true : null;
+        });
     }
 
     private function getModules(): array

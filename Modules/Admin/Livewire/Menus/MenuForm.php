@@ -4,91 +4,71 @@ namespace Modules\Admin\Livewire\Menus;
 
 use Livewire\Component;
 use Modules\Website\Models\Category;
-use Illuminate\Support\Str;
+use Spatie\Permission\Models\Permission;
 
 class MenuForm extends Component
 {
-    public $menuId = null;
-    public $name, $url, $icon, $sort_order = 0;
-    public $parent_id = null;
+    public $menuId;
+    public $isEdit = false;
+
+    public $name, $url, $icon, $can;
     public $is_active = true;
-
-    // Load danh sách Parent cho dropdown
-    public function getParentsProperty()
-    {
-        $query = Category::where('type', 'menu')->whereNull('parent_id');
-
-        // Nếu đang edit, không cho chọn chính mình làm cha
-        if ($this->menuId) {
-            $query->where('id', '!=', $this->menuId);
-        }
-
-        return $query->orderBy('name')->get();
-    }
+    public $is_section = false;
 
     public function mount($id = null)
     {
         if ($id) {
+            $this->isEdit = true;
+            $this->menuId = $id;
             $menu = Category::findOrFail($id);
-            $this->menuId = $menu->id;
+
             $this->name = $menu->name;
             $this->url = $menu->url;
             $this->icon = $menu->icon;
-            $this->sort_order = $menu->sort_order;
-            $this->parent_id = $menu->parent_id;
-            $this->is_active = (bool) $menu->is_active;
+            $this->can = $menu->can;
+            $this->is_active = (bool)$menu->is_active;
+            
+            // Logic nhận diện section
+            if (empty($menu->url) && $menu->children->count() > 0 && empty($menu->parent_id)) {
+                 // Đây là logic tương đối, bạn có thể tick thủ công
+            }
+             // Nếu user đã chủ động set url null khi tạo
+            $this->is_section = empty($menu->url);
         }
     }
 
-    protected function rules()
-    {
-        return [
-            'name' => 'required|min:2',
-            'url' => 'required',
-            'icon' => 'nullable|string', // SVG code
-            'sort_order' => 'integer',
-            'parent_id' => 'nullable|exists:categories,id'
-        ];
+    public function updatedIsSection($val) {
+        if($val) $this->url = null;
     }
 
     public function save()
     {
-        $this->validate();
+        $this->validate(['name' => 'required']);
 
         $data = [
             'name' => $this->name,
-            'slug' => Str::slug($this->name), // Slug tự động
-            'url' => $this->url,
+            'url' => $this->is_section ? null : $this->url,
             'icon' => $this->icon,
-            'sort_order' => $this->sort_order,
-            'parent_id' => $this->parent_id ?: null, // Chuyển chuỗi rỗng thành null
+            'can' => $this->can,
+            'type' => 'menu',
             'is_active' => $this->is_active,
-            'type' => 'menu', // Cố định type
         ];
-
-        if ($this->menuId) {
-            Category::where('id', $this->menuId)->update($data);
-        } else {
-            Category::create($data);
+        
+        // Mặc định tạo mới thì nằm cuối cùng (sort_order cao nhất)
+        if (!$this->isEdit) {
+            $data['sort_order'] = Category::menu()->max('sort_order') + 1;
         }
 
+        Category::updateOrCreate(['id' => $this->menuId], $data);
+        
+        session()->flash('success', 'Đã lưu thông tin menu.');
         return redirect()->route('admin.menus.index');
     }
 
-    public function increaseOrder()
-    {
-        $this->sort_order++;
-    }
-
-    public function decreaseOrder()
-    {
-        // Kiểm tra để không bị âm (nếu muốn)
-        if ($this->sort_order > 0) {
-            $this->sort_order--;
-        }
-    }
     public function render()
     {
-        return view('Admin::livewire.menus.menu-form');
+        return view('Admin::livewire.menus.menu-form', [
+            'permissions' => Permission::orderBy('name')->get()
+        ]);
     }
 }

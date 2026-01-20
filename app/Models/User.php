@@ -15,7 +15,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes,HasRoles;
-
+   // protected $guard_name = 'auth:admin';
     protected $fillable = [
         'name', 'email', 'password', 
         'phone', 'avatar', 'is_active', 'last_login_at'

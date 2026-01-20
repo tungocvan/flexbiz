@@ -58,6 +58,17 @@ class Category extends Model
         return $query->where('is_active', true);
     }
 
+    public function scopeSorted($query)
+    {
+        return $query->orderBy('sort_order', 'asc');
+    }
+
+    // Chỉ lấy các record là Menu
+    public function scopeMenu($query)
+    {
+        return $query->where('type', 'menu');
+    }
+
     public function scopeRoot(Builder $query): Builder
     {
         return $query->whereNull('parent_id');
