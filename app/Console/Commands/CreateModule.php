@@ -69,6 +69,7 @@ class CreateModule extends Command
                 $name.'/resources/js',
                 $name.'/resources/lang',
                 $name.'/resources/views',
+                $name.'/resources/views/pages',
                 $name.'/resources/views/livewire',
                 $name.'/resources/views/components',
                 $name.'/Services',

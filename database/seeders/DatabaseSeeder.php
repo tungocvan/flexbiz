@@ -5,9 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Spatie\Permission\Models\Role;
-use Database\Seeders\RolesAndPermissionsSeeder;
-use Database\Seeders\UserDemoRoles;
+use Modules\Website\database\Seeders\WebsiteDatabaseSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -20,7 +18,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             // RolesAndPermissionsSeeder::class,
-            UserDemoRoles::class,
+            //UserDemoRoles::class,
+            WebsiteDatabaseSeeder::class
         ]);
 
     }

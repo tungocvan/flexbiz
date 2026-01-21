@@ -9,6 +9,8 @@ use Modules\Website\database\Seeders\CategorySeeder;
 use Modules\Website\database\Seeders\ProductSeeder;
 use Modules\Website\database\Seeders\OrderSeeder;
 use Modules\Website\database\Seeders\MenuCategorySeeder;
+use Modules\Website\database\Seeders\RolesAndPermissionsSeeder;
+use Modules\Website\database\Seeders\UserAdminSeeder;
 
 
 class WebsiteDatabaseSeeder extends Seeder
@@ -18,7 +20,10 @@ class WebsiteDatabaseSeeder extends Seeder
         // Chạy lệnh: php artisan db:seed --class="Modules\Website\database\Seeders\WebsiteDatabaseSeeder"
 
         $this->call([
+            //
+            RolesAndPermissionsSeeder::class,
             // 1. Tạo người dùng trước
+            UserAdminSeeder::class,
             UserSeeder::class,
 
             // 2. Tạo danh mục

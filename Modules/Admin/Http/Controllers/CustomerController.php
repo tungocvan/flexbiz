@@ -11,7 +11,7 @@ class CustomerController extends Controller
         // 1. Phân quyền XEM (Index, Show)
         // Áp dụng cho hàm index và show
         $this->middleware('permission:view_customer')->only(['index', 'show']);
-        
+
         // // 2. Phân quyền THÊM (Create, Store)
         // // Áp dụng cho hàm create (hiện form) và store (lưu data)
         $this->middleware('permission:create_customer')->only(['create', 'store']);
