@@ -26,7 +26,7 @@ class LoginForm extends Component
             session()->regenerate();
 
             // Nếu user đến từ trang checkout hoặc trang cần login, trả về trang đó
-            return redirect()->intended(route('website.home'));
+            return redirect()->intended(route('home'));
         }
 
         // Đăng nhập thất bại
