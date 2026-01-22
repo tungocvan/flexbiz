@@ -13,6 +13,7 @@ use Modules\Admin\Http\Controllers\CustomerController;
 use Modules\Admin\Http\Controllers\CouponController;
 use Modules\Admin\Http\Controllers\RoleController;
 use Modules\Admin\Http\Controllers\StaffController;
+use Modules\Admin\Http\Controllers\AffiliateController;
 
 Route::middleware(['web'])->group(function () {
 
@@ -23,6 +24,7 @@ Route::middleware(['web'])->group(function () {
     Route::middleware(['web','auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+        Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
         // === QUẢN LÝ MENU ===
         Route::prefix('menus')->name('menus.')->group(function() {
             Route::get('/', [MenuController::class, 'index'])->name('index');

@@ -13,11 +13,23 @@ class Order extends Model
     protected $table = 'wp_orders';
 
     protected $fillable = [
-        'user_id', 'order_code',
-        'customer_name', 'customer_phone', 'customer_email', 'customer_address',
+        'user_id',
+        'affiliate_id',       // <--- Mới
+        'commission_status',  // <--- Mới
+        'commission_amount',  // <--- Mới
+        'order_code',
+        'customer_name',
+        'customer_phone',
+        'customer_email',
+        'customer_address',
         'note',
-        'subtotal', 'shipping_fee', 'discount', 'total',
-        'status', 'payment_method'
+        'subtotal',
+        'shipping_fee',
+        'discount',
+        'total',
+        'payment_method',
+        'rejection_reason',
+        'status',
     ];
 
     // Helper: Badge màu trạng thái (Master UI Style)
@@ -52,6 +64,11 @@ class Order extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    // Quan hệ với người giới thiệu (Affiliate)
+    public function affiliate()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'affiliate_id');
     }
     public function histories()
     {

@@ -77,5 +77,6 @@ Route::middleware(['web','auth'])->prefix('account')->name('account.')->group(fu
     // Đơn hàng (Mới thêm)
     Route::get('/orders', [AccountController::class, 'orders'])->name('orders');
     Route::get('/orders/{code}', [AccountController::class, 'orderDetail'])->name('orders.detail');
+    Route::get('/affiliate', [AccountController::class, 'affiliate'])->name('affiliate');
 });
 
