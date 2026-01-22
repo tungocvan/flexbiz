@@ -11,11 +11,15 @@ class BlogHighlight extends Component
 
     public function mount()
     {
-        // Lấy 4 bài viết mới nhất đã xuất bản
-        // Eager load categories để hiển thị tên danh mục
+        $this->posts = Post::where('status', 'published')
+            ->with('categories') // Eager load để hiển thị tên danh mục
 
-            $this->posts = Post::where('status', 'published')
-            ->with('categories')
+            // 👇 THÊM ĐOẠN NÀY: Loại bỏ bài viết thuộc danh mục 'pages'
+            ->whereDoesntHave('categories', function ($query) {
+                $query->where('slug', 'pages');
+                // Lưu ý: Kiểm tra lại trong DB xem slug là 'pages' hay 'pages' nhé
+            })
+
             ->latest('published_at')
             ->take(4)
             ->get();

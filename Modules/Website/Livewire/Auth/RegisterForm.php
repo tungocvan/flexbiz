@@ -41,7 +41,7 @@ class RegisterForm extends Component
         Auth::login($user);
 
         // 3. Chuyển hướng về trang chủ
-        return redirect()->route('website.home');
+        return redirect()->route('home');
     }
 
     public function render()
