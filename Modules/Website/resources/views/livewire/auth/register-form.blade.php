@@ -35,6 +35,6 @@
     </form>
 
     <div class="mt-4 text-center text-sm">
-        Đã có tài khoản? <a href="{{ route('website.login') }}" class="text-blue-600 hover:underline">Đăng nhập ngay</a>
+        Đã có tài khoản? <a href="{{ route('login') }}" class="text-blue-600 hover:underline">Đăng nhập ngay</a>
     </div>
 </div>

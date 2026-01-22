@@ -17,7 +17,7 @@ use Modules\Admin\Http\Controllers\StaffController;
 Route::middleware(['web'])->group(function () {
 
     // Auth Routes (Placeholder)
-    Route::get('login', [AuthController::class, 'login'])->name('login');
+    Route::get('/admin/login', [AuthController::class, 'login'])->name('admin.login');
 
     // Protected Routes
     Route::middleware(['web','auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
@@ -54,36 +54,36 @@ Route::middleware(['web'])->group(function () {
         // Thêm vào trong group prefix 'admin'
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
 
-    
+
         Route::prefix('posts')->name('posts.')->group(function() {
             Route::get('/', [PostController::class, 'index'])->name('index');
             Route::get('/create', [PostController::class, 'create'])->name('create');
             Route::get('/{id}/edit', [PostController::class, 'edit'])->name('edit');
         });
         Route::prefix('customers')->name('customers.')->group(function() {
-            Route::get('/', [CustomerController::class, 'index'])->name('index');     
-            Route::get('/create', [CustomerController::class, 'create'])->name('create');  
-            Route::get('/{id}', [CustomerController::class, 'show'])->name('show');    
-   
+            Route::get('/', [CustomerController::class, 'index'])->name('index');
+            Route::get('/create', [CustomerController::class, 'create'])->name('create');
+            Route::get('/{id}', [CustomerController::class, 'show'])->name('show');
+
         });
         Route::prefix('coupons')->name('coupons.')->group(function() {
-            Route::get('/', [CouponController::class, 'index'])->name('index');     
-            Route::get('/create', [CouponController::class, 'create'])->name('create');  
-            Route::get('/{id}/edit', [CouponController::class, 'edit'])->name('edit');    
-   
+            Route::get('/', [CouponController::class, 'index'])->name('index');
+            Route::get('/create', [CouponController::class, 'create'])->name('create');
+            Route::get('/{id}/edit', [CouponController::class, 'edit'])->name('edit');
+
         });
 
-        Route::prefix('/system')->name('roles.')->group(function() {      
+        Route::prefix('/system')->name('roles.')->group(function() {
             Route::get('/roles', [RoleController::class, 'index'])->name('index');
             Route::get('/roles/create', [RoleController::class, 'create'])->name('create');
-            Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])->name('edit');   
+            Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])->name('edit');
         });
-        Route::prefix('/system')->name('staff.')->group(function() {      
+        Route::prefix('/system')->name('staff.')->group(function() {
             Route::get('/staff', [StaffController::class, 'index'])->name('index');
             Route::get('/staff/create', [StaffController::class, 'create'])->name('create');
-            Route::get('/staff/{id}/edit', [StaffController::class, 'edit'])->name('edit');   
+            Route::get('/staff/{id}/edit', [StaffController::class, 'edit'])->name('edit');
         });
-    
+
     });
 
 

@@ -22,14 +22,33 @@ return new class extends Migration
             $table->id();
             $table->string('title')->index();
             $table->string('slug')->unique();
+
             $table->text('short_description')->nullable();
             $table->longText('description')->nullable();
-            $table->decimal('regular_price', 10, 2)->nullable();
-            $table->decimal('sale_price', 10, 2)->nullable();
-            $table->string('image')->nullable();
-            $table->json('gallery')->nullable();
+
+            // Giá cả
+            $table->decimal('regular_price', 15, 2)->nullable(); // Nên để 15 số để hỗ trợ tiền VNĐ lớn
+            $table->decimal('sale_price', 15, 2)->nullable();
+
+            // Quản lý kho hàng (Cái bạn đang thiếu)
+            $table->integer('quantity')->default(0);
+            $table->integer('sold_count')->default(0); // Đếm số đã bán (để làm mục Best Sellers)
+
+            // Ảnh
+            $table->string('image')->nullable(); // Ảnh đại diện
+            $table->json('gallery')->nullable(); // Album ảnh
+
+            // SEO & Phân loại
             $table->json('tags')->nullable();
             $table->boolean('is_active')->default(true)->index();
+            $table->boolean('is_featured')->default(false); // Sản phẩm nổi bật
+
+            // Người đăng (Để fix lỗi user relationship trước đó)
+            $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
+
+            // Thống kê
+            $table->integer('views')->default(0); // Đếm lượt xem
+
             $table->timestamps();
         });
 

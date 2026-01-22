@@ -55,7 +55,7 @@ class CheckoutForm extends Component
         $cart = Cart::with('items.product')->where('session_id', $sessionId)->first();
 
         if (!$cart || $cart->items->isEmpty()) {
-            return redirect()->route('website.cart.index');
+            return redirect()->route('cart.index');
         }
 
         DB::beginTransaction();
@@ -102,7 +102,7 @@ class CheckoutForm extends Component
             session()->flash('order_code', $order->order_code);
 
             // Chuyển hướng ngay lập tức
-            return redirect()->route('website.checkout.success');
+            return redirect()->route('checkout.success');
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -29,6 +29,6 @@
     </form>
 
     <div class="mt-4 text-center text-sm">
-        Chưa có tài khoản? <a href="{{ route('website.register') }}" class="text-blue-600 hover:underline">Đăng ký mới</a>
+        Chưa có tài khoản? <a href="{{ route('register') }}" class="text-blue-600 hover:underline">Đăng ký mới</a>
     </div>
 </div>

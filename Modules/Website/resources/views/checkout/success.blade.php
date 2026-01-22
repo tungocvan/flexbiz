@@ -35,7 +35,7 @@
 
                 <div class="flex justify-center gap-4">
                     <a href="{{ route('account.orders') }}" class="text-gray-600 hover:underline">Xem đơn hàng</a>
-                    <a href="{{ route('website.home') }}"
+                    <a href="/"
                         class="bg-pink-600 text-white px-6 py-2 rounded-full font-bold hover:bg-pink-700 transition">
                         Tôi đã thanh toán xong
                     </a>
@@ -56,7 +56,7 @@
                     <a href="{{ route('account.orders') }}" class="text-blue-600 font-medium hover:underline">Xem lịch sử
                         đơn hàng</a>
                     <span class="text-gray-300">|</span>
-                    <a href="{{ route('website.home') }}" class="text-blue-600 font-medium hover:underline">Tiếp tục mua
+                    <a href="{{ route('product.list') }}" class="text-blue-600 font-medium hover:underline">Tiếp tục mua
                         sắm</a>
                 </div>
             </div>

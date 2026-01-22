@@ -43,11 +43,26 @@ class Category extends Model
         return $this->children()->with('childrenRecursive');
     }
 
+    public function posts()
+    {
+        // Quan hệ Many-to-Many qua bảng trung gian 'category_post'
+        return $this->belongsToMany(Post::class, 'category_post', 'category_id', 'post_id');
+    }
+
     public function products(): BelongsToMany
     {
         return $this->belongsToMany(WpProduct::class, 'category_product', 'category_id', 'product_id');
     }
 
+    public function scopePostType($query)
+    {
+        return $query->where('type', 'post');
+    }
+
+    public function scopeProductType($query)
+    {
+        return $query->where('type', 'product');
+    }
     /*
     |--------------------------------------------------------------------------
     | Scopes

@@ -40,7 +40,7 @@
                     <span class="text-blue-600">{{ number_format($total) }}đ</span>
                 </div>
 
-                <a href="{{ route('website.checkout.index') }}" class="block w-full bg-blue-600 text-white text-center font-bold py-3 rounded hover:bg-blue-700 transition">
+                <a href="{{ route('checkout.index') }}" class="block w-full bg-blue-600 text-white text-center font-bold py-3 rounded hover:bg-blue-700 transition">
                     Tiến hành đặt hàng
                 </a>
             </div>
@@ -48,7 +48,7 @@
     @else
         <div class="text-center py-12 bg-white rounded-lg shadow">
             <p class="text-gray-500 mb-4">Giỏ hàng của bạn đang trống.</p>
-            <a href="{{ route('website.home') }}" class="text-blue-600 font-bold hover:underline">Tiếp tục mua sắm</a>
+            <a href="{{ route('home') }}" class="text-blue-600 font-bold hover:underline">Tiếp tục mua sắm</a>
         </div>
     @endif
 </div>

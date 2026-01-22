@@ -7,16 +7,28 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Storage;
+use App\Models\User;
 
 class WpProduct extends Model
 {
     protected $table = 'wp_products'; // Khóa cứng tên bảng
 
     protected $fillable = [
-        'title', 'slug', 'short_description', 'description',
-        'regular_price', 'sale_price',
-        'image', 'gallery', 'tags',
-        'is_active'
+        'title',
+        'slug',
+        'short_description',
+        'description',
+        'regular_price',
+        'sale_price',
+        'quantity',      // <--- Đã thêm
+        'sold_count',    // <--- Đã thêm
+        'image',
+        'gallery',
+        'tags',
+        'is_active',
+        'is_featured',   // <--- Đã thêm
+        'user_id',       // <--- Đã thêm
+        'views'          // <--- Đã thêm
     ];
 
     protected $casts = [
@@ -37,7 +49,10 @@ class WpProduct extends Model
         return $this->belongsToMany(Category::class, 'category_product', 'product_id', 'category_id');
     }
 
-
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     /*
     |--------------------------------------------------------------------------
@@ -104,5 +119,25 @@ class WpProduct extends Model
             if (str_starts_with($path, 'http')) return $path;
             return asset('storage/' . $path);
         })->toArray();
+    }
+
+    public function reviews()
+    {
+        // Lấy các đánh giá đã được duyệt, sắp xếp mới nhất
+        return $this->hasMany(Review::class, 'product_id')
+                    ->where('is_approved', true)
+                    ->latest();
+    }
+
+    // Helper tính điểm trung bình sao (VD: 4.5)
+    public function getAverageRatingAttribute()
+    {
+        return round($this->reviews()->avg('rating'), 1) ?? 0;
+    }
+
+    // Helper đếm tổng số đánh giá
+    public function getReviewCountAttribute()
+    {
+        return $this->reviews()->count();
     }
 }

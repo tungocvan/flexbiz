@@ -28,7 +28,11 @@ class Post extends Model
     {
         return $this->belongsToMany(Category::class, 'category_post', 'post_id', 'category_id');
     }
-    
+    public function user()
+    {
+        // Bài viết thuộc về 1 User (thông qua cột user_id)
+        return $this->belongsTo(User::class, 'user_id');
+    }
     // Quan hệ với Tags (Nhiều nhiều)
     public function tags()
     {

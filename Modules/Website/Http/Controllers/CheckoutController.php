@@ -14,7 +14,7 @@ class CheckoutController extends Controller
         $hasCart = \Modules\Website\Models\Cart::where('session_id', $sessionId)->exists();
 
         if (!$hasCart) {
-            return redirect()->route('website.cart.index')->with('error', 'Giỏ hàng đang trống!');
+            return redirect()->route('cart.index')->with('error', 'Giỏ hàng đang trống!');
         }
 
         return view('Website::checkout.index');
@@ -23,7 +23,7 @@ class CheckoutController extends Controller
     public function success()
     {
         if (!session()->has('order_code')) {
-            return redirect()->route('website.home');
+            return redirect()->route('home');
         }
 
         $orderCode = session('order_code');

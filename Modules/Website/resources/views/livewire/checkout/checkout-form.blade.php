@@ -17,7 +17,7 @@
                 <div class="ml-3">
                     <p class="text-sm text-blue-700">
                         Bạn đã có tài khoản?
-                        <a href="{{ route('website.login') }}?redirect=checkout" class="font-bold underline hover:text-blue-800">Đăng nhập ngay</a>
+                        <a href="{{ route('login') }}?redirect=checkout" class="font-bold underline hover:text-blue-800">Đăng nhập ngay</a>
                         để lưu đơn hàng vào tài khoản của bạn.
                     </p>
                 </div>

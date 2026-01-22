@@ -9,7 +9,7 @@ class="min-h-screen bg-gray-50 font-sans">
     <div class="bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <nav class="flex text-sm text-gray-500 mb-2">
-                <a href="{{ route('website.home') }}" class="hover:text-blue-600 transition">Trang chủ</a>
+                <a href="{{ route('home') }}" class="hover:text-blue-600 transition">Trang chủ</a>
                 <span class="mx-2">/</span>
                 <span class="text-gray-900 font-medium">Sản phẩm</span>
             </nav>
@@ -121,7 +121,7 @@ class="min-h-screen bg-gray-50 font-sans">
 
                                     <div class="relative overflow-hidden bg-gray-100"
                                          :class="viewMode === 'grid' ? 'aspect-[4/5]' : 'w-1/3 aspect-square rounded-lg'">
-                                        <a href="{{ route('website.product.detail', $product->slug) }}" class="block w-full h-full">
+                                        <a href="{{ route('product.detail', $product->slug) }}" class="block w-full h-full">
                                         <img src="{{ $product->image_url ?? asset('images/placeholder.jpg') }}"
                                              alt="{{ $product->title }}"
                                              class="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110">
