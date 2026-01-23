@@ -116,12 +116,13 @@ return new class extends Migration
             $table->id();
             // Liên kết người mua (nếu đã đăng nhập)
             $table->foreignId('user_id')->nullable()->constrained('users')->nullOnDelete();
-            
+
             // --- PHẦN AFFILIATE (MỚI THÊM) ---
             // Người giới thiệu (Lấy từ bảng users)
-            $table->foreignId('affiliate_id')->nullable()->constrained('users')->nullOnDelete(); 
+            $table->foreignId('affiliate_id')->nullable()->constrained('users')->nullOnDelete();
             // Trạng thái hoa hồng: pending (chờ), approved (duyệt), rejected (hủy)
-            $table->string('commission_status')->default('pending')->index(); 
+            $table->string('commission_status')->default('pending')->index();
+            $table->text('rejection_reason')->nullable();
             // Số tiền hoa hồng dự kiến (VD: 10% đơn hàng)
             $table->decimal('commission_amount', 15, 2)->default(0);
             // ----------------------------------
@@ -144,6 +145,7 @@ return new class extends Migration
             // Trạng thái
             $table->string('payment_method')->default('cod'); // cod, momo, vnpay
             $table->string('status')->default('pending')->index(); // pending, processing, shipping, completed, cancelled
+
 
             $table->timestamps();
         });

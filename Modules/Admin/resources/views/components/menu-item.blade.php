@@ -62,7 +62,7 @@
 
     <ul class="menu-list pl-8 mt-2 space-y-2 border-l-2 border-gray-100 ml-4">
         @foreach($menu->children as $child)
-            <x-admin::menu-item :menu="$child" />
+            <x-menu-item :menu="$child" />
         @endforeach
     </ul>
 </li>

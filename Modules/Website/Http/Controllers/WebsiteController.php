@@ -18,7 +18,7 @@ class WebsiteController extends Controller
     }
     public function home()
     {
-        return view('Website::home.index');
+        return view('Website::pages.home.index');
     }
 
     /**

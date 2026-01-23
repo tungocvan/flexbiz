@@ -49,20 +49,35 @@ class AffiliateService
             'pending_earnings' => $query->clone()
                 ->where('commission_status', 'pending')
                 ->sum('commission_amount'),
-            
+
             // Tổng số đơn hàng giới thiệu thành công
             'total_orders' => $query->count(),
         ];
     }
 
     /**
-     * Lấy lịch sử hoa hồng (Phân trang)
+     * Lấy lịch sử hoa hồng (Có lọc trạng thái)
      */
-    public function getCommissionHistory($userId, $limit = 10)
+    public function getCommissionHistory($userId, $status = 'all', $limit = 10)
     {
         return Order::where('affiliate_id', $userId)
-            ->select('id', 'order_code', 'total', 'commission_amount', 'commission_status', 'created_at', 'status')
+            ->with(['items']) // Eager load sản phẩm để hiển thị trong modal
+            ->when($status !== 'all', function ($q) use ($status) {
+                $q->where('commission_status', $status);
+            })
+            ->select('id', 'order_code', 'customer_name', 'total', 'commission_amount', 'commission_status', 'rejection_reason', 'created_at')
             ->latest()
             ->paginate($limit);
+    }
+
+    /**
+     * Lấy chi tiết 1 đơn hàng của Affiliate (Để xem modal)
+     */
+    public function getAffiliateOrderDetail($orderId, $affiliateId)
+    {
+        return Order::where('id', $orderId)
+            ->where('affiliate_id', $affiliateId) // Bảo mật: Chỉ xem được đơn mình giới thiệu
+            ->with('items')
+            ->firstOrFail();
     }
 }

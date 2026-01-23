@@ -57,6 +57,14 @@
         "children": []
     },
     {
+        "name": "Tiếp thị liên kết",
+        "url": "\/admin\/affiliate",
+        "icon": "affiliate",
+        "can": "",
+        "is_active": true,
+        "children": []
+    },
+    {
         "name": "Khách hàng",
         "url": "\/admin\/customers",
         "icon": "users",

@@ -16,6 +16,7 @@ use Modules\Website\database\Seeders\PostSeeder;
 use Modules\Website\database\Seeders\FlashSaleSeeder;
 use Modules\Website\database\Seeders\FooterPostSeeder;
 use Modules\Website\database\Seeders\ReviewSeeder;
+use Modules\Website\database\Seeders\AffiliateSeeder;
 
 
 class WebsiteDatabaseSeeder extends Seeder
@@ -30,14 +31,12 @@ class WebsiteDatabaseSeeder extends Seeder
             // 1. Tạo người dùng trước
             UserAdminSeeder::class,
             UserSeeder::class,
-
             // 2. Tạo danh mục sản phẩm
             CategorySeeder::class,
             // 3. Tạo sản phẩm (gắn với danh mục)
             ProductSeeder::class,
              // Tạo sản phẩm khuyến mãi
-             FlashSaleSeeder::class,
-
+            FlashSaleSeeder::class,
             // Tạo danh mục bài viết
             PostCategorySeeder::class,
             // Tạo bài viết
@@ -46,12 +45,12 @@ class WebsiteDatabaseSeeder extends Seeder
             ThemeSettingsSeeder::class,
             // Tạo dữ liệu mẫu Footer
             FooterPostSeeder::class,
-
             // 4. Tạo đơn hàng (gắn với User và Sản phẩm)
             OrderSeeder::class,
             // 5. Tạo menu sidebar
             MenuCategorySeeder::class,
             ReviewSeeder::class,
+            AffiliateSeeder::class,
         ]);
     }
 }

@@ -30,12 +30,19 @@
             </a>
         @endforeach
         {{-- LINK VÀO TRANG AFFILIATE --}}
-        <a href="{{ route('account.affiliate') }}" 
+        <a href="{{ route('account.affiliate') }}"
            class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-bold {{ request()->routeIs('account.affiliate') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600' }}">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
             Tiếp thị liên kết
             <span class="ml-auto bg-yellow-400 text-yellow-900 text-[10px] px-2 py-0.5 rounded-full">HOT</span>
-        </a>    
+        </a>
+        {{-- LINK VÀO TRANG PROFILE --}}
+        <a href="{{ route('account.profile') }}"
+           class="flex items-center gap-3 px-4 py-3 rounded-xl transition font-bold {{ request()->routeIs('account.profile') ? 'bg-blue-50 text-blue-600' : 'text-gray-600 hover:bg-gray-50 hover:text-blue-600' }}">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
+            Hồ sơ Cá nhân
+            <span class="ml-auto bg-yellow-400 text-yellow-900 text-[10px] px-2 py-0.5 rounded-full">HOT</span>
+        </a>
         <form method="POST" action="{{ route('logout') }}" class="border-t border-gray-100">
             @csrf
             <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">

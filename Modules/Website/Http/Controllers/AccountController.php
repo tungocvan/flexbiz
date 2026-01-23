@@ -34,4 +34,7 @@ class AccountController extends Controller
         // Trả về view page (nơi chứa Livewire Component)
         return view('Website::account.affiliate');
     }
+    public function profile() {
+        return view('Website::pages.account.profile');
+    }
 }

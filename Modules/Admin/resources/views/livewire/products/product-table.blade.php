@@ -141,10 +141,11 @@
                             <td class="px-6 py-4">
                                 <div class="flex items-center">
                                     <div class="h-12 w-12 flex-shrink-0 rounded-lg border border-gray-200 bg-gray-100 overflow-hidden relative group">
+
                                         <img class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                                              src="{{ $item->image ? (Illuminate\Support\Str::startsWith($item->image, ['http']) ? $item->image : asset('storage/'.$item->image)) : 'https://placehold.co/100' }}"
                                              alt="">
-                                        
+
                                     </div>
                                     <div class="ml-4">
                                         <div class="text-sm font-bold text-gray-900 line-clamp-1 hover:text-indigo-600 cursor-pointer transition" title="{{ $item->title }}">

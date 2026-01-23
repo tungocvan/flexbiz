@@ -7,7 +7,7 @@
 
                 <div class="lg:col-span-1">
 
-                    @include('Website::components.account-sidebar')
+                    @include('Website::partials.account-sidebar')
                 </div>
 
                 <div class="lg:col-span-3">

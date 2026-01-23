@@ -141,7 +141,7 @@
                                     <p class="text-sm font-medium text-gray-900 truncate">{{ Auth::user()->email }}</p>
                                 </div>
                                 <div class="py-1">
-                                    <a href="#"
+                                    <a href="{{ route('account.profile') }}"
                                         class="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600">Hồ
                                         sơ cá nhân</a>
                                     <a href="{{ route('account.orders') }}"
