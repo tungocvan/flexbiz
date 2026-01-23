@@ -3,7 +3,7 @@
     <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
         <div class="flex flex-col md:flex-row items-center md:items-start gap-6">
             <div class="relative">
-                <img class="h-24 w-24 rounded-full object-cover border-4 border-gray-50 shadow-sm" 
+                <img class="h-24 w-24 rounded-full object-cover border-4 border-gray-50 shadow-sm"
                      src="{{ $user->avatar_url }}" alt="{{ $user->name }}">
                 <span class="absolute bottom-1 right-1 h-5 w-5 rounded-full border-2 border-white {{ $user->is_active ? 'bg-green-500' : 'bg-red-500' }}"></span>
             </div>
@@ -11,7 +11,7 @@
             <div class="flex-1 text-center md:text-left">
                 <div class="flex flex-col md:flex-row md:items-center gap-2 mb-1">
                     <h1 class="text-2xl font-bold text-gray-900">{{ $user->name }}</h1>
-                    @if($user->orders_sum_total > 10000000) 
+                    @if($user->orders_sum_total > 10000000)
                         <span class="inline-flex items-center rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700 ring-1 ring-inset ring-amber-600/20">
                             👑 Khách hàng VIP
                         </span>
@@ -21,7 +21,7 @@
                         </span>
                     @endif
                 </div>
-                
+
                 <div class="text-sm text-gray-500 space-y-1">
                     <p class="flex items-center justify-center md:justify-start gap-2">
                         <svg class="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
@@ -48,22 +48,22 @@
     </div>
 
     <div class="mb-6 flex space-x-1 bg-gray-100/80 p-1 rounded-xl w-max max-w-full overflow-x-auto">
-        <button wire:click="$set('activeTab', 'info')" 
+        <button wire:click="$set('activeTab', 'info')"
             class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all {{ $activeTab === 'info' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
             Thông tin cá nhân
         </button>
-        <button wire:click="$set('activeTab', 'addresses')" 
+        <button wire:click="$set('activeTab', 'addresses')"
             class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all {{ $activeTab === 'addresses' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
             Sổ địa chỉ
         </button>
-        <button wire:click="$set('activeTab', 'orders')" 
+        <button wire:click="$set('activeTab', 'orders')"
             class="px-5 py-2.5 rounded-lg text-sm font-medium transition-all {{ $activeTab === 'orders' ? 'bg-white text-indigo-700 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
             Lịch sử đơn hàng
         </button>
     </div>
 
     <div class="min-h-[400px]">
-        
+
         @if($activeTab === 'info')
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 animate-fade-in">
                 <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
@@ -72,21 +72,21 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
-                                <input type="text" wire:model="name" class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                <input type="text" wire:model="name" class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all">
                                 @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                <input type="email" wire:model="email" class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                <input type="email" wire:model="email" class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all">
                                 @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
-                                <input type="text" wire:model="phone" class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                <input type="text" wire:model="phone" class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>
-                                <select wire:model="is_active" class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                                <select wire:model="is_active" class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all">
                                     <option value="1">Đang hoạt động</option>
                                     <option value="0">Khóa tài khoản</option>
                                 </select>
@@ -106,7 +106,7 @@
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Đặt lại mật khẩu mới</label>
-                            <input type="password" wire:model="new_password" placeholder="Nhập mật khẩu mới..." class="w-full rounded-lg border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                            <input type="password" wire:model="new_password" placeholder="Nhập mật khẩu mới..." class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all">
                             <p class="text-xs text-gray-500 mt-1">Chỉ nhập nếu bạn muốn đổi mật khẩu cho khách.</p>
                         </div>
                         <button wire:click="updateProfile" class="w-full bg-gray-50 text-gray-700 border border-gray-200 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition">
@@ -132,11 +132,11 @@
                             @if($addr->is_default)
                                 <span class="absolute top-3 right-3 bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-200">Mặc định</span>
                             @endif
-                            
+
                             <div class="font-bold text-gray-900 mb-1">{{ $addr->name }}</div>
                             <div class="text-sm text-gray-600 mb-3">{{ $addr->phone }}</div>
                             <div class="text-sm text-gray-500 h-10 line-clamp-2">{{ $addr->address }}, {{ $addr->city }}</div>
-                            
+
                             <div class="mt-4 flex gap-3 border-t border-gray-50 pt-3">
                                 <button wire:click="openAddressModal({{ $addr->id }})" class="text-xs font-bold text-indigo-600 hover:text-indigo-800">Sửa</button>
                                 <button wire:confirm="Xóa địa chỉ này?" wire:click="deleteAddress({{ $addr->id }})" class="text-xs font-bold text-red-600 hover:text-red-800">Xóa</button>
@@ -194,52 +194,109 @@
     </div>
 
     @if($showAddressModal)
-        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('showAddressModal', false)"></div>
-                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-                
-                <div class="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg w-full">
-                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                        <h3 class="text-lg font-bold text-gray-900 mb-4">{{ $isEditAddress ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ mới' }}</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Tên người nhận</label>
-                                <input type="text" wire:model="addr_name" class="mt-1 w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('addr_name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Số điện thoại</label>
-                                <input type="text" wire:model="addr_phone" class="mt-1 w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                                @error('addr_phone') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Địa chỉ cụ thể</label>
-                                <textarea wire:model="addr_address" rows="2" class="mt-1 w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                                @error('addr_address') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700">Tỉnh/Thành phố (Tạm thời nhập tay)</label>
-                                <input type="text" wire:model="addr_city" class="mt-1 w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div class="flex items-center mt-2">
-                                <input type="checkbox" wire:model="addr_is_default" id="def" class="h-4 w-4 text-indigo-600 rounded border-gray-300">
-                                <label for="def" class="ml-2 text-sm text-gray-700">Đặt làm địa chỉ mặc định</label>
-                            </div>
+    <div class="relative z-[100]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+
+        <div
+            x-data
+            x-transition:enter="ease-out duration-300"
+            x-transition:enter-start="opacity-0"
+            x-transition:enter-end="opacity-100"
+            x-transition:leave="ease-in duration-200"
+            x-transition:leave-start="opacity-100"
+            x-transition:leave-end="opacity-0"
+            class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity"
+            wire:click="$set('showAddressModal', false)"
+        ></div>
+
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+
+                <div
+                    x-data
+                    x-transition:enter="ease-out duration-300"
+                    x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave="ease-in duration-200"
+                    x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                    x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                    class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg border border-gray-100"
+                >
+
+                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4 border-b border-gray-100">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold leading-6 text-gray-900" id="modal-title">
+                                {{ $isEditAddress ? 'Cập nhật địa chỉ' : 'Thêm địa chỉ mới' }}
+                            </h3>
+                            <button wire:click="$set('showAddressModal', false)" class="text-gray-400 hover:text-gray-500 transition">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
                         </div>
                     </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                        <button type="button" wire:click="saveAddress" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 sm:ml-3 sm:w-auto sm:text-sm">
-                            Lưu lại
+
+                    <div class="px-4 py-5 sm:p-6 space-y-5">
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tên người nhận <span class="text-red-500">*</span></label>
+                            <input type="text" wire:model="addr_name"
+                                class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all"
+                                placeholder="Nhập họ tên đầy đủ">
+                            @error('addr_name') <p class="mt-1 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Số điện thoại <span class="text-red-500">*</span></label>
+                            <input type="text" wire:model="addr_phone"
+                                class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all"
+                                placeholder="Ví dụ: 0987...">
+                            @error('addr_phone') <p class="mt-1 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Địa chỉ chi tiết <span class="text-red-500">*</span></label>
+                            <textarea wire:model="addr_address" rows="3"
+                                class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all resize-none"
+                                placeholder="Số nhà, tên đường, phường/xã..."></textarea>
+                            @error('addr_address') <p class="mt-1 text-xs text-red-500 font-medium">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Tỉnh / Thành phố</label>
+                            <input type="text" wire:model="addr_city"
+                                class="block w-full rounded-lg border-0 p-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 transition-all"
+                                placeholder="Nhập tên tỉnh/thành">
+                        </div>
+
+                        <div class="relative flex items-start">
+                            <div class="flex h-6 items-center">
+                                <input id="def" wire:model="addr_is_default" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600 cursor-pointer">
+                            </div>
+                            <div class="ml-3 text-sm leading-6">
+                                <label for="def" class="font-medium text-gray-900 cursor-pointer">Đặt làm địa chỉ mặc định</label>
+                                <p class="text-gray-500 text-xs">Địa chỉ này sẽ được chọn tự động khi thanh toán.</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 border-t border-gray-100">
+                        <button type="button" wire:click="saveAddress" wire:loading.attr="disabled"
+                            class="inline-flex w-full justify-center rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 sm:ml-3 sm:w-auto transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span wire:loading.remove wire:target="saveAddress">Lưu địa chỉ</span>
+                            <span wire:loading wire:target="saveAddress">Đang lưu...</span>
                         </button>
-                        <button type="button" wire:click="$set('showAddressModal', false)" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
-                            Hủy
+                        <button type="button" wire:click="$set('showAddressModal', false)"
+                            class="mt-3 inline-flex w-full justify-center rounded-lg bg-white px-5 py-2.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all">
+                            Hủy bỏ
                         </button>
                     </div>
+
                 </div>
             </div>
         </div>
-    @endif
+    </div>
+@endif
 
     <x-toast />
 </div>
