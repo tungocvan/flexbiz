@@ -214,7 +214,7 @@ class SettingForm extends Component
                     // Reset upload
                     unset($this->galleryUploads[$setting->id]);
                 }
-
+ 
                 // Cập nhật vào DB (Encode JSON)
                 $setting->update(['value' => json_encode($currentImages)]);
 
