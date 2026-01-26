@@ -128,3 +128,40 @@ Giao diện chia thành các Tabs hoặc Cards:
 - **Clean Code:** PSR-12, comment rõ ràng các đoạn logic phức tạp (đặc biệt là xử lý JSON setting).
 
 **HÃY BẮT ĐẦU BẰNG VIỆC TẠO MIGRATION.**
+
+🟢 NHÓM 1: CÁC KHỐI QUAN TRỌNG & ĐÃ CÓ LOGIC ADMIN (Ưu tiên làm ngay)
+Những phần này chúng ta đã xây dựng logic kỹ ở bước Admin (HomeSettings & FlashSaleManager), nên việc đấu nối sẽ rất nhanh và thấy kết quả ngay.
+
+Component 2: CategoryHighlight (Danh mục nổi bật)
+
+Nhiệm vụ: Lấy danh sách danh mục theo category_ids đã chọn trong Admin. Hiển thị ảnh và tên danh mục.
+
+Component 3: FlashSale (Sản phẩm giờ vàng)
+
+Nhiệm vụ: Lấy chiến dịch đang chạy (theo thời gian thực). Hiển thị đồng hồ đếm ngược và danh sách sản phẩm, thanh tiến trình "Đã bán".
+
+Component 8: TrustBadges (Cam kết)
+
+Nhiệm vụ: Hiển thị Icon/Text từ cấu hình JSON (Repeater) trong Admin.
+
+🟡 NHÓM 2: CÁC KHỐI SẢN PHẨM (Product Grids)
+Nhóm này liên quan nhiều đến query sản phẩm (wp_products).
+
+Component 5: FeaturedProducts (Sản phẩm nổi bật)
+
+Nhiệm vụ: Query sản phẩm theo danh sách ID (featured_ids) ghim cứng từ Admin.
+
+Component 6: NewArrivals (Hàng mới về)
+
+Nhiệm vụ: Query tự động lấy sản phẩm mới nhất (created_at).
+
+Component 7: BestSellers (Top bán chạy)
+
+Nhiệm vụ: Query sản phẩm có sold_count cao nhất (Cần Lazy Load vì query nặng).
+
+⚪ NHÓM 3: CÁC KHỐI NỘI DUNG PHỤ & TĨNH
+Component 4: PromoBanner: Ảnh quảng cáo giữa trang (Thường là tĩnh hoặc config đơn giản).
+
+Component 9: BlogHighlight: Lấy bài viết tin tức mới nhất.
+
+Component 10: Newsletter: Form đăng ký email (Footer).

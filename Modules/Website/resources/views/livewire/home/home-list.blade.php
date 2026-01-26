@@ -1,37 +1,81 @@
 <div>
-    {{-- 1. Hero Banner (Hiển thị ngay - Above the fold) --}}
-    <div class="container mx-auto px-4 mt-4">
-        @livewire('website.home.hero-banner')
-    </div>
+    {{-- 1. Hero Banner --}}
+    @php $heroClass = $this->getVisibilityClass('show_hero'); @endphp
+    @if($heroClass !== 'hidden')
+        <div class="container mx-auto px-4 mt-4 {{ $heroClass }}">
+            {{-- Hero tự query Banner theo position='hero', không cần truyền ID --}}
+            @livewire('website.home.hero-banner')
+        </div>
+    @endif
 
-    {{-- Container chính cho nội dung --}}
+    {{-- Container chính --}}
     <div class="container mx-auto px-4 py-8 space-y-12">
 
         {{-- 2. Danh mục nổi bật --}}
-        @livewire('website.home.category-highlight')
+        @php $catClass = $this->getVisibilityClass('show_categories'); @endphp
+        @if($catClass !== 'hidden')
+            <div class="{{ $catClass }}">
+                {{-- Truyền mảng ID danh mục đã chọn xuống con --}}
+                @livewire('website.home.category-highlight', [
+                    'categoryIds' => $settings['category_ids'] ?? []
+                ])
+            </div>
+        @endif
 
-        {{-- 3. Flash Sale (Lazy Load: Vì cần tính toán thời gian & query phức tạp) --}}
-        @livewire('website.home.flash-sale', ['lazy' => true])
+        {{-- 3. Flash Sale --}}
+        @php $flashClass = $this->getVisibilityClass('show_flash_sale'); @endphp
 
-        {{-- 4. Promo Banner (Điểm ngắt nhịp) --}}
+        @if($flashClass !== 'hidden')
+            <div class="{{ $flashClass }}">
+                @livewire('website.home.flash-sale', ['lazy' => true])
+            </div>
+        @endif
+
+        {{-- 4. Promo Banner --}}
+        {{-- Giả sử Promo Banner không có config bật tắt riêng thì để mặc định, hoặc thêm config sau --}}
         @livewire('website.home.promo-banner', ['lazy' => true])
 
-        {{-- 5. Sản phẩm nổi bật (Core Business) --}}
-         @livewire('website.home.featured-products', ['lazy' => true])
+        {{-- 5. Sản phẩm nổi bật --}}
+        @php $featuredClass = $this->getVisibilityClass('show_featured'); @endphp
+        @if($featuredClass !== 'hidden')
+            <div class="{{ $featuredClass }}">
+                {{-- Truyền mảng ID sản phẩm đã ghim xuống con --}}
+                @livewire('website.home.featured-products', [
+                    'lazy' => true,
+                    'productIds' => $settings['featured_ids'] ?? []
+                ])
+            </div>
+        @endif
 
         {{-- 6. Hàng mới về --}}
-        @livewire('website.home.new-arrivals', ['lazy' => true])
+        @php $newClass = $this->getVisibilityClass('show_new_arrivals'); @endphp
+        @if($newClass !== 'hidden')
+            <div class="{{ $newClass }}">
+                @livewire('website.home.new-arrivals', ['lazy' => true])
+            </div>
+        @endif
 
-        {{-- 7. Top bán chạy (Query nặng - Bắt buộc Lazy Load) --}}
+        {{-- 7. Top bán chạy --}}
         @livewire('website.home.best-sellers', ['lazy' => true])
 
-        {{-- 8. Trust Badges (Cam kết) --}}
-        @livewire('website.home.trust-badges', ['lazy' => true])
+        {{-- 8. Trust Badges --}}
+        <div class="hidden md:block"> {{-- Thường Trust Badge chỉ hiện PC --}}
+             {{-- Truyền mảng cấu hình Trust Badges (Icon, Text) xuống con --}}
+            @livewire('website.home.trust-badges', [
+                'lazy' => true,
+                'badges' => $settings['trust_badges'] ?? []
+            ])
+        </div>
 
-        {{-- 9. Blog tin tức --}}
-        @livewire('website.home.blog-highlight', ['lazy' => true])
+        {{-- 9. Blog --}}
+        @php $blogClass = $this->getVisibilityClass('show_blog'); @endphp
+        @if($blogClass !== 'hidden')
+            <div class="{{ $blogClass }}">
+                @livewire('website.home.blog-highlight', ['lazy' => true])
+            </div>
+        @endif
 
-        {{-- 10. Đăng ký nhận tin --}}
+        {{-- 10. Newsletter --}}
         @livewire('website.home.newsletter-signup', ['lazy' => true])
 
     </div>

@@ -1,31 +1,37 @@
-<div class="w-full bg-white border-t border-gray-100 mt-10">
-    <div class="container mx-auto px-4 py-12 md:py-16">
+<section class="container mx-auto px-4 mb-8">
+    <div class="bg-white rounded-xl shadow-[0_2px_15px_rgb(0,0,0,0.05)] border border-gray-100 p-6 md:p-8">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-y-10 gap-x-8">
-
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:divide-x lg:divide-gray-100">
             @foreach($badges as $badge)
-                <div class="group flex items-center gap-5 transition-all duration-300 hover:translate-x-2">
+                <div class="group flex items-center gap-4 px-4 transition-transform hover:-translate-y-1 duration-300">
 
-                    {{-- Icon Container --}}
-                    <div class="flex-shrink-0 w-16 h-16 flex items-center justify-center rounded-2xl bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors duration-300 shadow-sm group-hover:shadow">
-                        {!! $badge['icon'] !!}
+                    {{-- 1. XỬ LÝ ICON (Ảnh hoặc Class Font) --}}
+                    <div class="flex-shrink-0 w-12 h-12 md:w-14 md:h-14 flex items-center justify-center rounded-full bg-green-50 text-green-600 transition-colors group-hover:bg-green-600 group-hover:text-white">
+                        @if(isset($badge['icon']) && (str_contains($badge['icon'], 'http') || str_contains($badge['icon'], 'storage')))
+                            {{-- Trường hợp là Ảnh (Upload hoặc Link online) --}}
+                            <img src="{{ str_starts_with($badge['icon'], 'http') ? $badge['icon'] : asset('storage/'.$badge['icon']) }}"
+                                 class="w-8 h-8 object-contain"
+                                 alt="{{ $badge['title'] ?? '' }}">
+                        @else
+                            {{-- Trường hợp là Font Icon (fa-solid...) --}}
+                            <i class="{{ $badge['icon'] ?? 'fa-solid fa-check' }} text-xl md:text-2xl"></i>
+                        @endif
                     </div>
 
-                    {{-- Text Content --}}
-                    <div class="flex flex-col">
-                        <h4 class="text-base font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
-                            {{ $badge['title'] }}
+                    {{-- 2. TEXT CONTENT --}}
+                    <div class="flex-1">
+                        <h4 class="text-sm md:text-base font-bold text-gray-900 group-hover:text-green-600 transition-colors uppercase leading-tight">
+                            {{ $badge['title'] ?? 'Tiêu đề' }}
                         </h4>
-                        <p class="text-sm text-gray-500 font-medium mt-1">
-                            {{ $badge['desc'] }}
-                        </p>
+                        @if(!empty($badge['sub_title']))
+                            <p class="text-xs md:text-sm text-gray-500 mt-1 line-clamp-1">
+                                {{ $badge['sub_title'] }}
+                            </p>
+                        @endif
                     </div>
                 </div>
             @endforeach
-
         </div>
-    </div>
 
-    {{-- Dòng kẻ trang trí mờ bên dưới để tách biệt hoàn toàn với Footer --}}
-    <div class="h-px w-full bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-</div>
+    </div>
+</section>

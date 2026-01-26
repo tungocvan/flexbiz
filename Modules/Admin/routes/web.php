@@ -14,6 +14,9 @@ use Modules\Admin\Http\Controllers\CouponController;
 use Modules\Admin\Http\Controllers\RoleController;
 use Modules\Admin\Http\Controllers\StaffController;
 use Modules\Admin\Http\Controllers\AffiliateController;
+use Modules\Admin\Http\Controllers\HomeSettingsController;
+use Modules\Admin\Http\Controllers\BannerController;
+use Modules\Admin\Http\Controllers\FlashSaleController;
 
 Route::middleware(['web'])->group(function () {
 
@@ -25,6 +28,13 @@ Route::middleware(['web'])->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
+        Route::get('/homepage-settings', [HomeSettingsController::class, 'index'])
+        ->name('home.settings');
+        // Banner Manager
+        Route::get('/banners', [BannerController::class, 'index'])->name('banners');
+        // Flash Sale Manager
+        Route::get('/flash-sales', [FlashSaleController::class, 'index'])->name('flash-sales');
+
         // === QUẢN LÝ MENU ===
         Route::prefix('menus')->name('menus.')->group(function() {
             Route::get('/', [MenuController::class, 'index'])->name('index');
