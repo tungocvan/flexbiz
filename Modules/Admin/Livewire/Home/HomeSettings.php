@@ -115,13 +115,20 @@ class HomeSettings extends Component
      */
     public function addBadge()
     {
-        $this->trust_badges[] = ['icon' => '', 'title' => '', 'subtitle' => ''];
+        // Thêm một mảng rỗng vào data
+        $this->data['trust_badges'][] = [
+            'icon' => 'fa-solid fa-check',
+            'title' => '',
+            'sub_title' => ''
+        ];
     }
 
     public function removeBadge($index)
     {
-        unset($this->trust_badges[$index]);
-        $this->trust_badges = array_values($this->trust_badges); // Re-index array
+        // Xóa phần tử theo index
+        unset($this->data['trust_badges'][$index]);
+        // Đánh lại số thứ tự mảng (Re-index) để tránh lỗi array gap
+        $this->data['trust_badges'] = array_values($this->data['trust_badges']);
     }
 
     /**

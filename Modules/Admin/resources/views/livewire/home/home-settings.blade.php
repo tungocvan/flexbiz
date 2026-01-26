@@ -165,42 +165,69 @@
 
         {{-- TAB 3: TRUST BADGES (REPEATER) --}}
         @if ($activeTab === 'trust_badges')
-            <div class="animate-fadeIn">
-                <div class="space-y-4">
-                    @foreach ($trust_badges as $index => $badge)
-                        <div
-                            class="flex gap-4 items-start p-4 bg-gray-50 border border-gray-200 rounded-lg group hover:border-indigo-300 transition">
+        <div class="animate-fadeIn space-y-6">
 
+            {{-- Header hướng dẫn --}}
+            <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
+                <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <div>
+                    <strong>Lưu ý:</strong> Bạn có thể nhập class icon của FontAwesome (ví dụ: <code>fa-solid fa-truck</code>) hoặc dán đường dẫn ảnh (URL) vào ô Icon.
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                {{-- Kiểm tra nếu mảng tồn tại thì mới lặp --}}
+                @if(isset($data['trust_badges']) && count($data['trust_badges']) > 0)
+                    @foreach ($data['trust_badges'] as $index => $badge)
+                        <div class="flex gap-4 items-start p-4 bg-gray-50 border border-gray-200 rounded-lg group hover:border-indigo-300 transition shadow-sm relative"
+                            wire:key="badge-{{ $index }}"> {{-- wire:key rất quan trọng khi dùng repeater --}}
+
+                            {{-- Số thứ tự --}}
                             <div class="pt-2">
-                                <span
-                                    class="flex items-center justify-center w-6 h-6 rounded-full bg-gray-200 text-xs font-bold text-gray-600">{{ $index + 1 }}</span>
+                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-600 shadow-sm">
+                                    {{ $index + 1 }}
+                                </span>
                             </div>
 
+                            {{-- Form Inputs --}}
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                                {{-- 1. Icon --}}
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Class Icon (vd: fas
-                                        fa-truck)</label>
-                                    <input type="text" wire:model="trust_badges.{{ $index }}.icon"
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">
+                                        Icon / Ảnh
+                                    </label>
+                                    <div class="relative">
+                                        <input type="text" wire:model.live="data.trust_badges.{{ $index }}.icon"
+                                            placeholder="fa-solid fa-truck hoặc Link ảnh"
+                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-9">
+                                        {{-- Preview Icon nhỏ trong input --}}
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                            <i class="fa-solid fa-icons"></i>
+                                        </div>
+                                    </div>
                                 </div>
 
+                                {{-- 2. Tiêu đề --}}
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tiêu đề chính</label>
-                                    <input type="text" wire:model="trust_badges.{{ $index }}.title"
-                                        placeholder="Miễn phí vận chuyển"
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Tiêu đề chính</label>
+                                    <input type="text" wire:model="data.trust_badges.{{ $index }}.title"
+                                        placeholder="VD: Miễn phí vận chuyển"
+                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-medium">
                                 </div>
 
+                                {{-- 3. Mô tả phụ (Dùng sub_title để khớp với frontend) --}}
                                 <div>
-                                    <label class="block text-xs font-medium text-gray-700 mb-1">Mô tả phụ</label>
-                                    <input type="text" wire:model="trust_badges.{{ $index }}.subtitle"
-                                        placeholder="Đơn hàng > 500k"
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                    <label class="block text-xs font-bold text-gray-700 mb-1">Mô tả phụ</label>
+                                    <input type="text" wire:model="data.trust_badges.{{ $index }}.sub_title"
+                                        placeholder="VD: Đơn hàng > 500k"
+                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-500">
                                 </div>
                             </div>
 
+                            {{-- Button Xóa --}}
                             <button wire:click="removeBadge({{ $index }})"
-                                class="text-gray-400 hover:text-red-500 pt-2 transition">
+                                class="absolute top-2 right-2 md:static md:mt-7 text-gray-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 transition"
+                                title="Xóa mục này">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -208,19 +235,24 @@
                             </button>
                         </div>
                     @endforeach
-                </div>
-
-                <div class="mt-4">
-                    <button wire:click="addBadge" type="button"
-                        class="flex items-center gap-2 text-sm text-indigo-600 font-medium hover:text-indigo-800">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 4v16m8-8H4" />
-                        </svg>
-                        Thêm cam kết mới
-                    </button>
-                </div>
+                @else
+                    <div class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                        <p class="text-gray-500 mb-2">Chưa có cam kết nào.</p>
+                    </div>
+                @endif
             </div>
+
+            {{-- Button Thêm Mới --}}
+            <div class="mt-4">
+                <button wire:click="addBadge" type="button"
+                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                    <svg class="-ml-1 mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Thêm Cam Kết
+                </button>
+            </div>
+        </div>
         @endif
 
     </div>
