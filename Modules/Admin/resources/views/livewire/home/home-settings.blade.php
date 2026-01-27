@@ -116,143 +116,279 @@
 
                 <div class="border-t border-gray-100"></div>
 
-                <div>
-                    <div class="flex items-center justify-between mb-4">
-                        <div>
-                            <h3 class="text-base font-semibold text-gray-900">Sản phẩm Nổi bật (Ghim thủ công)</h3>
-                            <p class="text-sm text-gray-500">Những sản phẩm này sẽ hiện ở khối "Featured Products".</p>
-                        </div>
-                        <button type="button" wire:click="openProductPicker"
-                            class="text-sm bg-gray-100 text-gray-700 px-3 py-1.5 rounded-md hover:bg-gray-200 font-medium flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 4v16m8-8H4" />
-                            </svg>
-                            Chọn sản phẩm
-                        </button>
+               {{-- KHU VỰC CHỌN SẢN PHẨM NỔI BẬT --}}
+<div class="mt-6 border-t pt-6">
+    <div class="flex justify-between items-center mb-4">
+        <label class="block text-sm font-bold text-gray-700">
+            Sản phẩm nổi bật (Đã chọn: <span class="text-indigo-600">{{ count($data['featured_ids']) }}</span>)
+        </label>
+
+        <button wire:click="openProductPicker" type="button"
+                class="text-sm bg-indigo-50 text-indigo-700 px-3 py-1 rounded hover:bg-indigo-100 font-medium transition">
+            + Chọn sản phẩm
+        </button>
+    </div>
+
+    {{-- LIST SẢN PHẨM ĐÃ CHỌN (PREVIEW) --}}
+    @if(count($selectedProducts) > 0)
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            @foreach($selectedProducts as $p)
+                <div class="flex items-center gap-3 p-2 bg-white border border-gray-200 rounded shadow-sm relative group">
+
+                    {{-- 1. FIX ẢNH HIỂN THỊ (Preview List) --}}
+                    <div class="w-12 h-12 flex-shrink-0 bg-gray-100 rounded overflow-hidden">
+                        <img src="{{ $p->image ? (str_starts_with($p->image, 'http') ? $p->image : asset('storage/'.$p->image)) : 'https://placehold.co/100' }}"
+                             class="w-full h-full object-cover"
+                             alt="Img">
                     </div>
 
-                    @if (count($selectedProducts) > 0)
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            @foreach ($selectedProducts as $product)
-                                <div
-                                    class="flex items-center gap-3 p-2 border rounded-lg bg-white shadow-sm relative group">
-                                    <img src="{{ $product->image ? asset('storage/' . $product->image) : 'https://placehold.co/50' }}"
-                                        class="w-12 h-12 rounded object-cover bg-gray-100">
-                                    <div class="min-w-0 flex-1">
-                                        <h4 class="text-sm font-medium text-gray-900 truncate">{{ $product->title }}
-                                        </h4>
-                                        <p class="text-xs text-gray-500">ID: {{ $product->id }}</p>
-                                    </div>
-                                    <button wire:click="toggleProduct({{ $product->id }})"
-                                        class="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                    </button>
-                                </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="text-center py-8 bg-gray-50 rounded border border-dashed text-gray-400 text-sm">Chưa
-                            chọn sản phẩm nào.</div>
-                    @endif
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-800 truncate" title="{{ $p->title }}">{{ $p->title }}</p>
+                        <p class="text-xs text-gray-500">ID: {{ $p->id }}</p>
+                    </div>
+
+                    {{-- Nút Xóa nhanh --}}
+                    <button wire:click="toggleProduct({{ $p->id }})"
+                            class="text-gray-400 hover:text-red-500 p-1 rounded-full transition">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
+            @endforeach
+        </div>
+    @else
+        <div class="text-sm text-gray-500 italic bg-gray-50 p-4 rounded text-center border border-dashed border-gray-300">
+            Chưa có sản phẩm nổi bật nào. Bấm "Chọn sản phẩm" để thêm.
+        </div>
+    @endif
+</div>
+
+{{-- MODAL CHỌN SẢN PHẨM (PRODUCT PICKER) --}}
+@if($showProductPicker)
+<div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+
+        {{-- Overlay --}}
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="$set('showProductPicker', false)"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+
+            {{-- Header Modal --}}
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 border-b">
+                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Chọn sản phẩm nổi bật</h3>
+
+                {{-- Search Box --}}
+                <div class="mt-4 relative">
+                    <input type="text" wire:model.live.debounce.300ms="productSearchQuery"
+                           class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md pl-10"
+                           placeholder="Tìm kiếm theo tên sản phẩm...">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Body List --}}
+            <div class="bg-gray-50 px-4 py-4 sm:p-6 h-96 overflow-y-auto">
+                <div class="grid grid-cols-1 gap-3">
+                    @forelse($searchProducts as $product)
+                        @php
+                            $isSelected = in_array($product->id, $data['featured_ids']);
+
+                            // --- LOGIC SỬA LỖI ẢNH (QUAN TRỌNG) ---
+                            $imageUrl = 'https://placehold.co/100'; // Ảnh mặc định nếu rỗng
+
+                            if (!empty($product->image)) {
+                                // TRƯỜNG HỢP 1: Ảnh Online (Unsplash, Lorempixel...) -> GIỮ NGUYÊN
+                                if (str_starts_with($product->image, 'http')) {
+                                    $imageUrl = $product->image;
+                                }
+                                // TRƯỜNG HỢP 2: Ảnh Upload (Local) -> Thêm storage/
+                                else {
+                                    // Xử lý kỹ: nếu trong DB lỡ lưu chữ 'storage/' rồi thì không thêm nữa
+                                    $cleanPath = trim($product->image, '/'); // Xóa dấu / ở đầu nếu có
+                                    if (str_starts_with($cleanPath, 'storage/')) {
+                                        $imageUrl = asset($cleanPath);
+                                    } else {
+                                        $imageUrl = asset('storage/' . $cleanPath);
+                                    }
+                                }
+                            }
+                        @endphp
+
+                        <div wire:click="toggleProduct({{ $product->id }})"
+                             class="flex items-center p-3 rounded-lg border cursor-pointer transition select-none gap-3
+                                    {{ $isSelected ? 'border-indigo-500 bg-indigo-50 ring-1 ring-indigo-500' : 'border-gray-200 bg-white hover:border-indigo-300' }}">
+
+                            {{-- IMAGE CONTAINER --}}
+                            <div class="h-12 w-12 flex-shrink-0 rounded bg-gray-200 overflow-hidden relative border border-gray-100">
+                                <img src="{{ $imageUrl }}"
+                                     class="h-full w-full object-cover"
+                                     onerror="this.src='https://placehold.co/100?text=Err'">
+
+                                {{-- Icon Check Active --}}
+                                @if($isSelected)
+                                    <div class="absolute inset-0 bg-indigo-600/20 flex items-center justify-center">
+                                        <div class="bg-indigo-600 rounded-full p-0.5">
+                                            <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-sm font-medium text-gray-900 truncate {{ $isSelected ? 'text-indigo-700' : '' }}">
+                                    {{ $product->title }}
+                                </h4>
+                                <div class="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>ID: {{ $product->id }}</span>
+                                    <span>•</span>
+                                    <span>{{ number_format($product->regular_price) }}đ</span>
+                                </div>
+                            </div>
+
+                            {{-- Trạng thái text --}}
+                            <div class="ml-4 flex-shrink-0">
+                                @if($isSelected)
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        Đã chọn
+                                    </span>
+                                @else
+                                    <span class="text-gray-400 group-hover:text-gray-500">
+                                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                                    </span>
+                                @endif
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-10 text-gray-500">
+                            @if($productSearchQuery)
+                                Không tìm thấy sản phẩm nào khớp với "{{ $productSearchQuery }}"
+                            @else
+                                Nhập tên sản phẩm để tìm kiếm...
+                            @endif
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
+            {{-- Footer Modal --}}
+            <div class="bg-white px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse border-t">
+                <button type="button" wire:click="$set('showProductPicker', false)"
+                        class="w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none sm:ml-3 sm:w-auto sm:text-sm">
+                    Đóng
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
             </div>
         @endif
 
+
         {{-- TAB 3: TRUST BADGES (REPEATER) --}}
         @if ($activeTab === 'trust_badges')
-        <div class="animate-fadeIn space-y-6">
+            <div class="animate-fadeIn space-y-6">
 
-            {{-- Header hướng dẫn --}}
-            <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
-                <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                <div>
-                    <strong>Lưu ý:</strong> Bạn có thể nhập class icon của FontAwesome (ví dụ: <code>fa-solid fa-truck</code>) hoặc dán đường dẫn ảnh (URL) vào ô Icon.
+                {{-- Header hướng dẫn --}}
+                <div class="bg-blue-50 text-blue-700 px-4 py-3 rounded-lg text-sm flex items-start gap-2">
+                    <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div>
+                        <strong>Lưu ý:</strong> Bạn có thể nhập class icon của FontAwesome (ví dụ: <code>fa-solid
+                            fa-truck</code>) hoặc dán đường dẫn ảnh (URL) vào ô Icon.
+                    </div>
                 </div>
-            </div>
 
-            <div class="space-y-4">
-                {{-- Kiểm tra nếu mảng tồn tại thì mới lặp --}}
-                @if(isset($data['trust_badges']) && count($data['trust_badges']) > 0)
-                    @foreach ($data['trust_badges'] as $index => $badge)
-                        <div class="flex gap-4 items-start p-4 bg-gray-50 border border-gray-200 rounded-lg group hover:border-indigo-300 transition shadow-sm relative"
-                            wire:key="badge-{{ $index }}"> {{-- wire:key rất quan trọng khi dùng repeater --}}
+                <div class="space-y-4">
+                    {{-- Kiểm tra nếu mảng tồn tại thì mới lặp --}}
+                    @if (isset($data['trust_badges']) && count($data['trust_badges']) > 0)
+                        @foreach ($data['trust_badges'] as $index => $badge)
+                            <div class="flex gap-4 items-start p-4 bg-gray-50 border border-gray-200 rounded-lg group hover:border-indigo-300 transition shadow-sm relative"
+                                wire:key="badge-{{ $index }}"> {{-- wire:key rất quan trọng khi dùng repeater --}}
 
-                            {{-- Số thứ tự --}}
-                            <div class="pt-2">
-                                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-600 shadow-sm">
-                                    {{ $index + 1 }}
-                                </span>
-                            </div>
+                                {{-- Số thứ tự --}}
+                                <div class="pt-2">
+                                    <span
+                                        class="flex items-center justify-center w-8 h-8 rounded-full bg-white border border-gray-200 text-xs font-bold text-gray-600 shadow-sm">
+                                        {{ $index + 1 }}
+                                    </span>
+                                </div>
 
-                            {{-- Form Inputs --}}
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
-                                {{-- 1. Icon --}}
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">
-                                        Icon / Ảnh
-                                    </label>
-                                    <div class="relative">
-                                        <input type="text" wire:model.live="data.trust_badges.{{ $index }}.icon"
-                                            placeholder="fa-solid fa-truck hoặc Link ảnh"
-                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-9">
-                                        {{-- Preview Icon nhỏ trong input --}}
-                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
-                                            <i class="fa-solid fa-icons"></i>
+                                {{-- Form Inputs --}}
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 flex-1">
+                                    {{-- 1. Icon --}}
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">
+                                            Icon / Ảnh
+                                        </label>
+                                        <div class="relative">
+                                            <input type="text"
+                                                wire:model.live="data.trust_badges.{{ $index }}.icon"
+                                                placeholder="fa-solid fa-truck hoặc Link ảnh"
+                                                class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm pl-9">
+                                            {{-- Preview Icon nhỏ trong input --}}
+                                            <div
+                                                class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                                                <i class="fa-solid fa-icons"></i>
+                                            </div>
                                         </div>
+                                    </div>
+
+                                    {{-- 2. Tiêu đề --}}
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Tiêu đề chính</label>
+                                        <input type="text"
+                                            wire:model="data.trust_badges.{{ $index }}.title"
+                                            placeholder="VD: Miễn phí vận chuyển"
+                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-medium">
+                                    </div>
+
+                                    {{-- 3. Mô tả phụ (Dùng sub_title để khớp với frontend) --}}
+                                    <div>
+                                        <label class="block text-xs font-bold text-gray-700 mb-1">Mô tả phụ</label>
+                                        <input type="text"
+                                            wire:model="data.trust_badges.{{ $index }}.sub_title"
+                                            placeholder="VD: Đơn hàng > 500k"
+                                            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-500">
                                     </div>
                                 </div>
 
-                                {{-- 2. Tiêu đề --}}
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Tiêu đề chính</label>
-                                    <input type="text" wire:model="data.trust_badges.{{ $index }}.title"
-                                        placeholder="VD: Miễn phí vận chuyển"
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-medium">
-                                </div>
-
-                                {{-- 3. Mô tả phụ (Dùng sub_title để khớp với frontend) --}}
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 mb-1">Mô tả phụ</label>
-                                    <input type="text" wire:model="data.trust_badges.{{ $index }}.sub_title"
-                                        placeholder="VD: Đơn hàng > 500k"
-                                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm text-gray-500">
-                                </div>
+                                {{-- Button Xóa --}}
+                                <button wire:click="removeBadge({{ $index }})"
+                                    class="absolute top-2 right-2 md:static md:mt-7 text-gray-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 transition"
+                                    title="Xóa mục này">
+                                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
                             </div>
-
-                            {{-- Button Xóa --}}
-                            <button wire:click="removeBadge({{ $index }})"
-                                class="absolute top-2 right-2 md:static md:mt-7 text-gray-400 hover:text-red-500 p-1.5 rounded-full hover:bg-red-50 transition"
-                                title="Xóa mục này">
-                                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                            </button>
+                        @endforeach
+                    @else
+                        <div class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
+                            <p class="text-gray-500 mb-2">Chưa có cam kết nào.</p>
                         </div>
-                    @endforeach
-                @else
-                    <div class="text-center py-8 border-2 border-dashed border-gray-300 rounded-lg">
-                        <p class="text-gray-500 mb-2">Chưa có cam kết nào.</p>
-                    </div>
-                @endif
-            </div>
+                    @endif
+                </div>
 
-            {{-- Button Thêm Mới --}}
-            <div class="mt-4">
-                <button wire:click="addBadge" type="button"
-                    class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
-                    <svg class="-ml-1 mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                    </svg>
-                    Thêm Cam Kết
-                </button>
+                {{-- Button Thêm Mới --}}
+                <div class="mt-4">
+                    <button wire:click="addBadge" type="button"
+                        class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition">
+                        <svg class="-ml-1 mr-2 w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 4v16m8-8H4" />
+                        </svg>
+                        Thêm Cam Kết
+                    </button>
+                </div>
             </div>
-        </div>
         @endif
 
     </div>
@@ -282,8 +418,10 @@
                                     class="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-gray-50 transition {{ in_array($prod->id, $data['featured_ids']) ? 'bg-indigo-50 ring-1 ring-indigo-200' : '' }}">
 
                                     <div class="shrink-0">
-                                        <img src="{{ $prod->image ? asset('storage/' . $prod->image) : 'https://placehold.co/40' }}"
-                                            class="h-10 w-10 object-cover rounded bg-gray-200">
+                                        <img src="{{ $prod->image ? (\Illuminate\Support\Str::startsWith($prod->image, ['http', 'https']) ? $prod->image : asset('storage/' . $prod->image)) : 'https://placehold.co/40' }}"
+                                             class="h-10 w-10 object-cover rounded bg-gray-200"
+                                             alt="{{ $prod->title ?? 'Product Image' }}"
+                                             onerror="this.src='https://placehold.co/40?text=Err'">
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <p class="text-sm font-medium text-gray-900 truncate">{{ $prod->title }}</p>

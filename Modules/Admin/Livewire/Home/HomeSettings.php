@@ -3,18 +3,17 @@
 namespace Modules\Admin\Livewire\Home;
 
 use Livewire\Component;
-use Modules\Admin\Services\HomeSettingService;
-use Modules\Website\Models\Product; // Giả định bạn đã có Model Product
-use Modules\Website\Models\Category; // Giả định bạn đã có Model Category
 use Illuminate\Support\Facades\DB;
+use Modules\Admin\Models\Setting; // Import Model Setting
+use Modules\Website\Models\Category;
+use Modules\Website\Models\Product;
 
 class HomeSettings extends Component
 {
     // 1. PROPERTIES
-    // 1.1. Tab Control
     public $activeTab = 'layout'; // layout, data, trust_badges
 
-    // 1.2. Config Data (Mapped from Service)
+    // Cấu hình hiển thị (Bật/Tắt các khối)
     public $layout = [
         'show_hero'         => 'all',
         'show_categories'   => 'all',
@@ -24,120 +23,111 @@ class HomeSettings extends Component
         'show_blog'         => 'all',
     ];
 
+    // Dữ liệu chính (Lưu tất cả vào đây để wire:model cho gọn)
     public $data = [
-        'category_ids' => [], // Array ID danh mục
-        'featured_ids' => [], // Array ID sản phẩm nổi bật
+        'category_ids' => [], // Mảng ID danh mục
+        'featured_ids' => [], // Mảng ID sản phẩm nổi bật
+        'trust_badges' => [], // Mảng Repeater: [['icon' => '', 'title' => '', ...]]
     ];
 
-    public $trust_badges = []; // Array Repeater: [['icon' => '', 'title' => '', 'subtitle' => '']]
-
-    // 1.3. Search & Picker States
+    // Search & Picker States
     public $productSearchQuery = '';
     public $showProductPicker = false;
 
-    // End 1.
-
     // 2. LIFECYCLE HOOKS
-    public function mount(HomeSettingService $service)
+    public function mount()
     {
-        // Load data từ Service
-        $settings = $service->getHomeSettings();
+        // 2.1. LOAD LAYOUT SETTINGS
+        // Lấy các key bắt đầu bằng 'show_'
+        $settings = Setting::where('key', 'like', 'show_%')->pluck('value', 'key')->toArray();
+        $this->layout = array_merge($this->layout, $settings);
 
-        $this->layout = [
-            'show_hero'         => $settings['show_hero'],
-            'show_categories'   => $settings['show_categories'],
-            'show_flash_sale'   => $settings['show_flash_sale'],
-            'show_featured'     => $settings['show_featured'],
-            'show_new_arrivals' => $settings['show_new_arrivals'],
-            'show_blog'         => $settings['show_blog'],
-        ];
+        // 2.2. LOAD DATA IDs (JSON -> Array)
+        $catIds = Setting::where('key', 'home_category_ids')->value('value');
+        $this->data['category_ids'] = $catIds ? json_decode($catIds, true) : [];
 
-        $this->data = [
-            'category_ids' => $settings['category_ids'],
-            'featured_ids' => $settings['featured_ids'],
-        ];
+        $featIds = Setting::where('key', 'home_featured_ids')->value('value');
+        $this->data['featured_ids'] = $featIds ? json_decode($featIds, true) : [];
 
-        $this->trust_badges = $settings['trust_badges'] ?: [];
+        // 2.3. LOAD TRUST BADGES (Quan trọng: Decode JSON)
+        $badgesJson = Setting::where('key', 'home_trust_badges')->value('value');
 
-        // Init 1 badge nếu trống
-        if (empty($this->trust_badges)) {
-            $this->addBadge();
+        if ($badgesJson) {
+            $this->data['trust_badges'] = json_decode($badgesJson, true);
+        } else {
+            // Nếu chưa có thì khởi tạo mảng rỗng
+            $this->data['trust_badges'] = [];
         }
     }
 
     public function render()
     {
-        // Lấy danh mục để fill vào Select
-        // Lưu ý: Thay đổi namespace Category theo project thực tế của bạn
+        // 1. Lấy danh mục (Dùng DB query cho nhẹ hoặc Model nếu cần quan hệ)
+
         $allCategories = DB::table('categories')->select('id', 'name')->get();
 
-        // Lấy danh sách sản phẩm tìm kiếm (cho Modal Picker)
+        // 2. Lấy danh sách sản phẩm tìm kiếm (cho Modal Picker)
         $searchProducts = [];
         if ($this->showProductPicker) {
             $query = DB::table('wp_products')->select('id', 'title', 'image', 'regular_price');
-
             if (!empty($this->productSearchQuery)) {
                 $query->where('title', 'like', '%' . $this->productSearchQuery . '%');
             }
-
             $searchProducts = $query->limit(10)->get();
         }
 
-        // Lấy danh sách sản phẩm ĐÃ CHỌN (để hiển thị preview)
+        // 3. Lấy danh sách sản phẩm ĐÃ CHỌN (để hiển thị preview)
         $selectedProducts = [];
         if (!empty($this->data['featured_ids'])) {
-            $selectedProducts = DB::table('wp_products')
-                ->whereIn('id', $this->data['featured_ids'])
-                ->select('id', 'title', 'image')
-                ->get();
+            // Dùng whereIn và FIELD để giữ đúng thứ tự đã chọn
+            $idsStr = implode(',', $this->data['featured_ids']);
+            if($idsStr) {
+                $selectedProducts = DB::table('wp_products')
+                    ->whereIn('id', $this->data['featured_ids'])
+                    ->orderByRaw("FIELD(id, $idsStr)")
+                    ->select('id', 'title', 'image')
+                    ->get();
+            }
         }
 
         return view('Admin::livewire.home.home-settings', [
-            'allCategories' => $allCategories,
-            'searchProducts' => $searchProducts,
+            'allCategories'    => $allCategories,
+            'searchProducts'   => $searchProducts,
             'selectedProducts' => $selectedProducts
         ]);
     }
-    // End 2.
 
     // 3. ACTION METHODS
 
-    /**
-     * Chuyển Tab
-     */
     public function setTab($tab)
     {
         $this->activeTab = $tab;
     }
 
-    /**
-     * Trust Badges Repeater Logic
-     */
+    // --- TRUST BADGES REPEATER ---
+
     public function addBadge()
     {
-        // Thêm một mảng rỗng vào data
         $this->data['trust_badges'][] = [
-            'icon' => 'fa-solid fa-check',
-            'title' => '',
+            'icon'      => 'fa-solid fa-check',
+            'title'     => '',
             'sub_title' => ''
         ];
     }
 
     public function removeBadge($index)
     {
-        // Xóa phần tử theo index
         unset($this->data['trust_badges'][$index]);
-        // Đánh lại số thứ tự mảng (Re-index) để tránh lỗi array gap
+        // Re-index mảng để tránh lỗi khi encode JSON
         $this->data['trust_badges'] = array_values($this->data['trust_badges']);
     }
 
-    /**
-     * Product Picker Logic
-     */
+    // --- PRODUCT PICKER ---
+
     public function openProductPicker()
     {
         $this->showProductPicker = true;
-        $this->productSearchQuery = ''; // Reset search
+        $this->productSearchQuery = '';
     }
 
     public function toggleProduct($id)
@@ -149,36 +139,50 @@ class HomeSettings extends Component
             // Add
             $this->data['featured_ids'][] = $id;
         }
-        // Re-index để tránh lỗi JSON object khi lưu
+        // Re-index
         $this->data['featured_ids'] = array_values($this->data['featured_ids']);
     }
 
-    /**
-     * SAVE DATA
-     */
-    public function save(HomeSettingService $service)
+    // --- SAVE DATA (CORE LOGIC) ---
+
+    public function save()
     {
-        // Merge tất cả data lại để gửi sang Service
-        $payload = array_merge(
-            [
-                'show_hero'         => $this->layout['show_hero'],
-                'show_categories'   => $this->layout['show_categories'],
-                'show_flash_sale'   => $this->layout['show_flash_sale'],
-                'show_featured'     => $this->layout['show_featured'],
-                'show_new_arrivals' => $this->layout['show_new_arrivals'],
-                'show_blog'         => $this->layout['show_blog'],
+        // 1. Lưu cấu hình Layout (Show/Hide)
+        foreach ($this->layout as $key => $value) {
+            Setting::updateOrCreate(['key' => $key], ['value' => $value]);
+        }
 
-                'category_ids'      => $this->data['category_ids'],
-                'featured_ids'      => $this->data['featured_ids'],
-
-                'trust_badges'      => $this->trust_badges,
-            ]
+        // 2. Lưu Data IDs (Encode Array -> JSON String)
+        Setting::updateOrCreate(
+            ['key' => 'home_category_ids'],
+            ['value' => json_encode($this->data['category_ids'])]
         );
 
-        $service->updateHomeSettings($payload);
+        Setting::updateOrCreate(
+            ['key' => 'home_featured_ids'],
+            ['value' => json_encode($this->data['featured_ids'])]
+        );
 
-        // Hiển thị Toast thông báo
-        $this->dispatch('show-toast', type: 'success', message: 'Cập nhật trang chủ thành công!');
+        // 3. Lưu Trust Badges (Xử lý kỹ phần này)
+        if (isset($this->data['trust_badges']) && is_array($this->data['trust_badges'])) {
+            // Lọc bỏ các item rỗng title để tránh rác
+            $cleanBadges = array_filter($this->data['trust_badges'], function($item) {
+                return !empty($item['title']);
+            });
+
+            Setting::updateOrCreate(
+                ['key' => 'home_trust_badges'],
+                ['value' => json_encode(array_values($cleanBadges))] // array_values để reset key về 0,1,2...
+            );
+        }
+
+        // 4. Thông báo
+        $this->dispatch('alert', [
+            'type' => 'success',
+            'message' => 'Đã lưu cấu hình thành công!'
+        ]);
+
+        // Nếu bạn dùng Toast library khác thì đổi dòng trên, ví dụ:
+        // session()->flash('success', 'Đã lưu thành công');
     }
-    // End 3.
 }
