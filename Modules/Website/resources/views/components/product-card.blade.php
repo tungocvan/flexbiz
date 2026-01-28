@@ -7,7 +7,7 @@
         <a href="{{ Route::has('product.detail') ? route('product.detail', ['slug' => $product->slug]) : '#' }}" class="block w-full h-full">
             {{-- Xử lý link ảnh (Online hoặc Storage) --}}
             @php
-                $imgUrl = $product->image ? (str_starts_with($product->image, 'http') ? $product->image : asset('storage/' . $product->image)) : 'https://placehold.co/400x600';
+                $imgUrl = $product->image ? (\Illuminate\Support\Str::startsWith($product->image, ['http', 'https']) ? $product->image : asset('storage/' . $product->image)) : 'https://placehold.co/400x600';
             @endphp
             <img src="{{ $imgUrl }}"
                  alt="{{ $product->title }}"
@@ -35,13 +35,17 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
         </button>
 
-        {{-- Quick Add Cart (Slide Up) --}}
-        <div class="absolute inset-x-0 bottom-0 p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out z-10">
-            <button wire:click="addToCart({{ $product->id }})"
-                    class="w-full bg-black/90 backdrop-blur text-white text-sm font-semibold py-3 rounded-lg shadow-lg hover:bg-green-600 transition-colors flex items-center justify-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
-                Thêm vào giỏ
-            </button>
+        {{-- Quick Add Cart (Livewire Component) --}}
+        {{-- Đã đổi vị trí sang góc phải dưới để hợp với style nút tròn 'circle-orange' --}}
+        <div class="absolute bottom-3 right-3 z-30 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+            @livewire(
+                'website.cart.add-to-cart',
+                [
+                    'productId' => $product->id,
+                    'style' => 'circle-orange',
+                ],
+                key('p-card-add-' . $product->id)
+            )
         </div>
     </div>
 

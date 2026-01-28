@@ -3,51 +3,31 @@
 namespace Modules\Website\Livewire\Home;
 
 use Livewire\Component;
-use Modules\Website\Models\Post; // Import Model Post của bạn
+use Modules\Admin\Models\Setting;
+use Modules\Website\Models\Post; // Import đúng Model của bạn
+use Illuminate\Database\Eloquent\Collection;
 
 class BlogHighlight extends Component
 {
-    public $posts;
-
-    public function mount()
-    {
-        $this->posts = Post::where('status', 'published')
-            ->with('categories') // Eager load để hiển thị tên danh mục
-
-            // 👇 THÊM ĐOẠN NÀY: Loại bỏ bài viết thuộc danh mục 'pages'
-            ->whereDoesntHave('categories', function ($query) {
-                $query->where('slug', 'pages');
-                // Lưu ý: Kiểm tra lại trong DB xem slug là 'pages' hay 'pages' nhé
-            })
-
-            ->latest('published_at')
-            ->take(4)
-            ->get();
-    }
-
-    // Skeleton Layout Magazine
+    /**
+     * UI Skeleton: Hiển thị khi đang tải
+     */
     public function placeholder()
     {
         return <<<'blade'
-        <div class="mb-20 container mx-auto px-4">
-            <div class="flex justify-between items-end mb-8">
-                <div class="h-8 bg-gray-200 rounded w-40"></div>
+        <div class="container mx-auto px-4 mb-20">
+            <div class="text-center mb-10">
+                <div class="h-8 bg-gray-200 rounded w-48 mx-auto mb-2"></div>
+                <div class="h-4 bg-gray-200 rounded w-64 mx-auto"></div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {{-- Hero Post Placeholder --}}
-                <div class="bg-gray-200 rounded-xl aspect-video animate-pulse"></div>
-                {{-- List Post Placeholder --}}
-                <div class="space-y-6">
-                    @foreach(range(1,3) as $i)
-                        <div class="flex gap-4">
-                            <div class="w-32 h-24 bg-gray-200 rounded-lg"></div>
-                            <div class="flex-1 space-y-2">
-                                <div class="h-4 bg-gray-200 rounded w-full"></div>
-                                <div class="h-4 bg-gray-200 rounded w-2/3"></div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                @foreach(range(1, 3) as $i)
+                    <div class="animate-pulse">
+                        <div class="bg-gray-200 rounded-xl aspect-video mb-4"></div>
+                        <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                        <div class="h-4 bg-gray-200 rounded w-2/3"></div>
+                    </div>
+                @endforeach
             </div>
         </div>
         blade;
@@ -55,6 +35,23 @@ class BlogHighlight extends Component
 
     public function render()
     {
-        return view('Website::livewire.home.blog-highlight');
+        // 1. Lấy cấu hình số lượng từ Admin (Mặc định 3)
+        $limit = Setting::where('key', 'home_blog_count')->value('value');
+        $limit = $limit ? (int)$limit : 3;
+
+        // 2. Query bài viết theo Model Post của bạn
+        $posts = Post::where('status', 'published') // Chỉ lấy bài đã xuất bản
+            ->whereNotNull('published_at')          // Phải có ngày xuất bản
+            ->whereDoesntHave('categories', function ($query) {
+                $query->where('slug', 'pages');
+                // Lưu ý: Kiểm tra lại trong DB xem slug là 'pages' hay 'pages' nhé
+            })
+            ->orderBy('published_at', 'desc')       // Mới nhất lên đầu
+            ->take($limit)
+            ->get();
+
+        return view('Website::livewire.home.blog-highlight', [
+            'posts' => $posts
+        ]);
     }
 }

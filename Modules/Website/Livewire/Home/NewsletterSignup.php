@@ -30,13 +30,17 @@ class NewsletterSignup extends Component
     {
         $this->validate();
 
-        // Lưu vào DB
+        // 1. Lưu vào DB
+        // Nếu chưa có bảng newsletters, hãy chạy migration
         Newsletter::create(['email' => $this->email]);
 
-        // Giả lập độ trễ mạng để hiển thị loading cho đẹp
+        // 2. Giả lập độ trễ mạng để hiển thị loading cho đẹp (UX)
         sleep(1);
 
+        // 3. Hiển thị trạng thái thành công
         $this->subscribed = true;
+
+        // 4. Reset form
         $this->reset('email');
     }
 

@@ -14,7 +14,7 @@ use Modules\Website\database\Seeders\UserAdminSeeder;
 use Modules\Website\database\Seeders\PostCategorySeeder;
 use Modules\Website\database\Seeders\PostSeeder;
 use Modules\Website\database\Seeders\FlashSaleSeeder;
-use Modules\Website\database\Seeders\FooterPostSeeder;
+use Modules\Website\database\Seeders\FooterSeeder;
 use Modules\Website\database\Seeders\ReviewSeeder;
 use Modules\Website\database\Seeders\AffiliateSeeder;
 
@@ -44,7 +44,7 @@ class WebsiteDatabaseSeeder extends Seeder
             // Tạo slides
             ThemeSettingsSeeder::class,
             // Tạo dữ liệu mẫu Footer
-            FooterPostSeeder::class,
+            FooterSeeder::class,
             // 4. Tạo đơn hàng (gắn với User và Sản phẩm)
             OrderSeeder::class,
             // 5. Tạo menu sidebar

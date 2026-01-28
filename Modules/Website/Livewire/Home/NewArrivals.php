@@ -3,40 +3,32 @@
 namespace Modules\Website\Livewire\Home;
 
 use Livewire\Component;
-use Modules\Website\Services\ProductService;
+use Modules\Website\Models\WpProduct;
+use Modules\Admin\Models\Setting; // Import Model Setting
 use Illuminate\Database\Eloquent\Collection;
 
 class NewArrivals extends Component
 {
     public Collection $products;
 
-    public function mount(ProductService $service)
+    public function mount()
     {
-        // Lấy 10 sản phẩm mới nhất
-        $this->products = $service->getNewArrivals(10);
+        // 1. Lấy cấu hình số lượng từ Admin (Mặc định 10 nếu chưa set)
+        $limit = Setting::where('key', 'home_new_arrivals_count')->value('value');
+        $limit = $limit ? (int)$limit : 10;
+
+        // 2. Query tự động theo limit
+        $this->products = WpProduct::where('is_active', true)
+            ->latest('created_at') // Mới nhất lên đầu
+            ->take($limit)         // Lấy theo số lượng cấu hình
+            ->with('categories')
+            ->get();
     }
 
-    // UI Skeleton: Dạng hàng ngang (Horizontal)
-    public function placeholder()
+    public function addToCart($productId)
     {
-        return <<<'blade'
-        <div class="mb-16 container mx-auto px-4">
-            <div class="flex justify-between items-center mb-6">
-                <div class="h-8 bg-gray-200 rounded w-40"></div>
-                <div class="h-4 bg-gray-200 rounded w-20"></div>
-            </div>
-            {{-- Horizontal Scroll Skeleton --}}
-            <div class="flex gap-4 overflow-hidden">
-                @foreach(range(1, 6) as $i)
-                    <div class="min-w-[200px] animate-pulse">
-                        <div class="bg-gray-200 rounded-xl aspect-[3/4] mb-3"></div>
-                        <div class="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                        <div class="h-4 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                @endforeach
-            </div>
-        </div>
-        blade;
+        $this->dispatch('add-to-cart', productId: $productId);
+        $this->dispatch('alert', type: 'success', message: 'Đã thêm vào giỏ hàng!');
     }
 
     public function render()

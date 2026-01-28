@@ -7,9 +7,11 @@ use Illuminate\Support\Facades\DB;
 use Modules\Admin\Models\Setting; // Import Model Setting
 use Modules\Website\Models\Category;
 use Modules\Website\Models\Product;
+use Livewire\WithFileUploads;
 
 class HomeSettings extends Component
 {
+    use WithFileUploads;
     // 1. PROPERTIES
     public $activeTab = 'layout'; // layout, data, trust_badges
 
@@ -20,7 +22,10 @@ class HomeSettings extends Component
         'show_flash_sale'   => 'all',
         'show_featured'     => 'all',
         'show_new_arrivals' => 'all',
-        'show_blog'         => 'all',
+        'show_blog_highlight'  => 'all',
+        'show_best_sellers' => 'all', // Thêm best sellers
+        'show_promo_banner' => 'all', // Thêm promo banner
+        'show_trust_badges' => 'all',
     ];
 
     // Dữ liệu chính (Lưu tất cả vào đây để wire:model cho gọn)
@@ -34,6 +39,31 @@ class HomeSettings extends Component
     public $productSearchQuery = '';
     public $showProductPicker = false;
 
+    public $newArrivalsCount = 10;
+    public $bestSellersCount = 8;
+    public $newPromoImage;
+
+    // 1. Khai báo biến cấu hình Blog
+    public $blogCount = 3; // Mặc định hiển thị 3 bài
+
+    // 🟡 BIẾN MỚI CHO PROMO BANNER
+    public $promoBanner = [
+        'show' => true,
+        'image' => '',
+        'title' => '',
+        'sub_title' => '',
+        'btn_text' => 'Mua Ngay',
+        'link' => '#',
+        'details_link' => '',
+    ];
+
+    // 🟡 1. THÊM BIẾN CẤU HÌNH NEWSLETTER
+    public $newsletter = [
+        'show' => true,
+        'badge' => 'Tham gia cộng đồng',
+        'title' => 'Mở khóa ưu đãi <span class="text-blue-400">10%</span> cho đơn hàng đầu tiên.',
+        'description' => 'Đăng ký để nhận tin tức về bộ sưu tập mới, mẹo phối đồ và các ưu đãi độc quyền chỉ dành cho thành viên.',
+    ];
     // 2. LIFECYCLE HOOKS
     public function mount()
     {
@@ -48,6 +78,31 @@ class HomeSettings extends Component
 
         $featIds = Setting::where('key', 'home_featured_ids')->value('value');
         $this->data['featured_ids'] = $featIds ? json_decode($featIds, true) : [];
+        // 1. LOAD NEW ARRIVALS COUNT
+        $count = Setting::where('key', 'home_new_arrivals_count')->value('value');
+        if ($count) {
+            $this->newArrivalsCount = (int) $count;
+        }
+
+        // 1. LOAD BEST SELLERS COUNT
+        $bsCount = Setting::where('key', 'home_best_sellers_count')->value('value');
+        if ($bsCount) $this->bestSellersCount = (int) $bsCount;
+
+        // 1. LOAD PROMO BANNER CONFIG
+        $promoSettings = Setting::where('key', 'home_promo_banner')->value('value');
+        if ($promoSettings) {
+            // Merge với mảng mặc định để tránh lỗi thiếu key
+            $this->promoBanner = array_merge($this->promoBanner, json_decode($promoSettings, true));
+        }
+
+        // 2. Load Blog Count
+        $this->blogCount = (int) Setting::where('key', 'home_blog_count')->value('value') ?: 3;
+
+        // 🟡 2. LOAD NEWSLETTER
+        $newsletterSettings = Setting::where('key', 'home_newsletter')->value('value');
+        if ($newsletterSettings) {
+            $this->newsletter = array_merge($this->newsletter, json_decode($newsletterSettings, true));
+        }
 
         // 2.3. LOAD TRUST BADGES (Quan trọng: Decode JSON)
         $badgesJson = Setting::where('key', 'home_trust_badges')->value('value');
@@ -147,6 +202,23 @@ class HomeSettings extends Component
 
     public function save()
     {
+        // --- XỬ LÝ UPLOAD ẢNH PROMO BANNER ---
+        if ($this->newPromoImage) {
+            // 1. Validate
+            $this->validate([
+                'newPromoImage' => 'image|max:3072', // Max 3MB
+            ]);
+
+            // 2. Lưu ảnh vào folder 'banners' trong disk 'public'
+            // Kết quả trả về: banners/ten-file-hash.jpg
+            $path = $this->newPromoImage->store('banners', 'public');
+
+            // 3. Cập nhật đường dẫn mới vào mảng settings
+            $this->promoBanner['image'] = $path;
+
+            // 4. Reset biến tạm (để UI không hiện ảnh preview nữa)
+            $this->newPromoImage = null;
+        }
         // 1. Lưu cấu hình Layout (Show/Hide)
         foreach ($this->layout as $key => $value) {
             Setting::updateOrCreate(['key' => $key], ['value' => $value]);
@@ -161,6 +233,33 @@ class HomeSettings extends Component
         Setting::updateOrCreate(
             ['key' => 'home_featured_ids'],
             ['value' => json_encode($this->data['featured_ids'])]
+        );
+
+        // 2. LƯU NEW ARRIVALS COUNT
+        Setting::updateOrCreate(
+            ['key' => 'home_new_arrivals_count'],
+            ['value' => $this->newArrivalsCount]
+        );
+
+        // 2. LƯU BEST SELLERS COUNT
+        Setting::updateOrCreate(
+            ['key' => 'home_best_sellers_count'],
+            ['value' => $this->bestSellersCount]
+        );
+
+        // 2. SAVE PROMO BANNER CONFIG
+        Setting::updateOrCreate(
+            ['key' => 'home_promo_banner'],
+            ['value' => json_encode($this->promoBanner)]
+        );
+
+        // 3. Lưu Blog Count
+        Setting::updateOrCreate(['key' => 'home_blog_count'], ['value' => $this->blogCount]);
+
+        // 🟡 3. LƯU NEWSLETTER
+        Setting::updateOrCreate(
+            ['key' => 'home_newsletter'],
+            ['value' => json_encode($this->newsletter)]
         );
 
         // 3. Lưu Trust Badges (Xử lý kỹ phần này)

@@ -17,6 +17,8 @@ use Modules\Admin\Http\Controllers\AffiliateController;
 use Modules\Admin\Http\Controllers\HomeSettingsController;
 use Modules\Admin\Http\Controllers\BannerController;
 use Modules\Admin\Http\Controllers\FlashSaleController;
+use Modules\Admin\Http\Controllers\HeaderController;
+use Modules\Admin\Http\Controllers\FooterController;
 
 Route::middleware(['web'])->group(function () {
 
@@ -30,6 +32,10 @@ Route::middleware(['web'])->group(function () {
         Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
         Route::get('/homepage-settings', [HomeSettingsController::class, 'index'])
         ->name('home.settings');
+        Route::get('/header-settings', [HeaderController::class, 'index'])
+        ->name('header.settings');
+        Route::get('/footer-settings', [FooterController::class, 'index'])
+        ->name('footer.settings');
         // Banner Manager
         Route::get('/banners', [BannerController::class, 'index'])->name('banners');
         // Flash Sale Manager

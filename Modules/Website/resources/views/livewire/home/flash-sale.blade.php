@@ -78,8 +78,7 @@
     {{-- Product Grid --}}
     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         @foreach ($products as $product)
-            <div
-                class="group relative bg-white border border-gray-100 hover:border-red-200 hover:shadow-lg rounded-lg transition p-3 h-full flex flex-col">
+            <div class="group relative bg-white border border-gray-100 hover:border-red-200 hover:shadow-lg rounded-lg transition p-3 h-full flex flex-col">
                 <div class="relative aspect-[4/5] mb-3 overflow-hidden rounded bg-gray-100">
                     <a href="{{ Route::has('product.detail') ? route('product.detail', ['slug' => $product->slug]) : '#' }}">
                         <img src="{{ $product->image_url }}"
@@ -88,20 +87,31 @@
                     </a>
 
                     @if ($product->discount_percent > 0)
-                        <span
-                            class="absolute top-0 left-0 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-br-lg shadow-md z-10">
+                        <span class="absolute top-0 left-0 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded-br-lg shadow-md z-10">
                             -{{ $product->discount_percent }}%
                         </span>
                     @endif
 
-                    <div
-                        class="absolute bottom-2 right-2 text-red-600 bg-white/90 p-1 rounded-full shadow-sm text-xs font-bold flex items-center gap-1 z-10">
+                    <div class="absolute bottom-2 right-2 text-red-600 bg-white/90 p-1 rounded-full shadow-sm text-xs font-bold flex items-center gap-1 z-10">
                         <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd"
                                   d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03z"
                                   clip-rule="evenodd"/>
                         </svg>
                     </div>
+
+                     {{-- 🔴 NÚT ADD TO CART (MỚI THÊM) --}}
+                     <div class="absolute bottom-3 right-3 z-30 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
+                        @livewire(
+                            'website.cart.add-to-cart',
+                            [
+                                'productId' => $product->id,
+                                'style' => 'circle-orange',
+                            ],
+                            key('flash-add-' . $product->id)
+                        )
+                    </div>
+
                 </div>
 
                 <h4 class="text-xs md:text-sm font-medium text-gray-800 line-clamp-2 mb-2 flex-1 min-h-[40px]">

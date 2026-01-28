@@ -150,7 +150,7 @@ Nhóm này liên quan nhiều đến query sản phẩm (wp_products).
 Component 5: FeaturedProducts (Sản phẩm nổi bật)
 
 Nhiệm vụ: Query sản phẩm theo danh sách ID (featured_ids) ghim cứng từ Admin.
-
+ 
 Component 6: NewArrivals (Hàng mới về)
 
 Nhiệm vụ: Query tự động lấy sản phẩm mới nhất (created_at).
@@ -161,7 +161,6 @@ Nhiệm vụ: Query sản phẩm có sold_count cao nhất (Cần Lazy Load vì 
 
 ⚪ NHÓM 3: CÁC KHỐI NỘI DUNG PHỤ & TĨNH
 Component 4: PromoBanner: Ảnh quảng cáo giữa trang (Thường là tĩnh hoặc config đơn giản).
-
 Component 9: BlogHighlight: Lấy bài viết tin tức mới nhất.
-
 Component 10: Newsletter: Form đăng ký email (Footer).
+

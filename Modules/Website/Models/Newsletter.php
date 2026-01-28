@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Newsletter extends Model
 {
-    protected $fillable = ['email', 'is_subscribed'];
+    // Tên bảng (nếu khác mặc định)
+    protected $table = 'newsletters';
 
+    protected $fillable = ['email', 'status'];
 }

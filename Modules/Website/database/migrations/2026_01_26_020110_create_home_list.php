@@ -14,9 +14,11 @@ return new class extends Migration
 
             // 1.1. Thong tin co ban
             $table->string('title')->nullable()->comment('Tiêu đề banner (để quản lý)');
+            $table->string('sub_title')->nullable()->comment('Mô tả phụ dưới tiêu đề');
             $table->string('image_desktop')->comment('Đường dẫn ảnh Desktop');
             $table->string('image_mobile')->nullable()->comment('Đường dẫn ảnh Mobile (nếu có)');
             $table->string('link')->nullable()->comment('Link khi click vào banner');
+            $table->string('btn_text')->nullable()->comment('Chữ trên nút bấm (VD: Mua ngay)');
 
             // 1.2. Vi tri va Sap xep
             // Enum position giúp ta tái sử dụng bảng này cho nhiều chỗ khác nhau trên trang chủ
