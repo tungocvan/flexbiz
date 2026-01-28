@@ -138,6 +138,55 @@
         "children": []
     },
     {
+        "name": "Thiết lập Website",
+        "url": null,
+        "icon": "shield-check",
+        "can": "view_staff",
+        "is_active": true,
+        "children": [
+            {
+                "name": "Thiết lập bố cục",
+                "url": "\/admin\/homepage-settings",
+                "icon": null,
+                "can": "view_role",
+                "is_active": true,
+                "children": []
+            },
+            {
+                "name": "Thiết lập Banner",
+                "url": "\/admin\/banners",
+                "icon": null,
+                "can": "view_staff",
+                "is_active": true,
+                "children": []
+            },
+            {
+                "name": "Thiết lập Header",
+                "url": "\/admin\/header-settings",
+                "icon": null,
+                "can": "view_role",
+                "is_active": true,
+                "children": []
+            },
+            {
+                "name": "Thiết lập Footer",
+                "url": "\/admin\/footer-settings",
+                "icon": null,
+                "can": "view_role",
+                "is_active": true,
+                "children": []
+            },
+            {
+                "name": "Thiết lập Khuyến Mãi",
+                "url": "\/admin\/flash-sales",
+                "icon": null,
+                "can": "view_staff",
+                "is_active": true,
+                "children": []
+            }
+        ]
+    },
+    {
         "name": "Cấu hình chung",
         "url": "\/admin\/settings",
         "icon": "cog",
