@@ -3,7 +3,7 @@
     @php $heroClass = $this->getVisibilityClass('show_hero'); @endphp
     @if($heroClass !== 'hidden')
         <div class="container mx-auto px-4 mt-4 {{ $heroClass }}">
-            {{-- Hero tự query Banner theo position='hero', không cần truyền ID --}}
+            {{-- Hero tự query Banner theo position='hero' --}}
             @livewire('website.home.hero-banner')
         </div>
     @endif
@@ -24,7 +24,6 @@
 
         {{-- 3. Flash Sale --}}
         @php $flashClass = $this->getVisibilityClass('show_flash_sale'); @endphp
-
         @if($flashClass !== 'hidden')
             <div class="{{ $flashClass }}">
                 @livewire('website.home.flash-sale', ['lazy' => true])
@@ -32,8 +31,12 @@
         @endif
 
         {{-- 4. Promo Banner --}}
-        {{-- Giả sử Promo Banner không có config bật tắt riêng thì để mặc định, hoặc thêm config sau --}}
-        @livewire('website.home.promo-banner', ['lazy' => true])
+        @php $promoClass = $this->getVisibilityClass('show_promo_banner'); @endphp
+        @if($promoClass !== 'hidden')
+            <div class="{{ $promoClass }}">
+                @livewire('website.home.promo-banner', ['lazy' => true])
+            </div>
+        @endif
 
         {{-- 5. Sản phẩm nổi bật --}}
         @php $featuredClass = $this->getVisibilityClass('show_featured'); @endphp
@@ -56,19 +59,27 @@
         @endif
 
         {{-- 7. Top bán chạy --}}
-        @livewire('website.home.best-sellers', ['lazy' => true])
+        @php $showClass = $this->getVisibilityClass('show_best_sellers'); @endphp
+        @if($showClass !== 'hidden')
+            <div class="{{ $showClass }}">
+                @livewire('website.home.best-sellers', ['lazy' => true])
+            </div>
+        @endif
 
         {{-- 8. Trust Badges --}}
-        <div class="hidden md:block"> {{-- Thường Trust Badge chỉ hiện PC --}}
-             {{-- Truyền mảng cấu hình Trust Badges (Icon, Text) xuống con --}}
-            @livewire('website.home.trust-badges', [
-                'lazy' => true,
-                'badges' => $settings['trust_badges'] ?? []
-            ])
-        </div>
+        @php $trustClass = $this->getVisibilityClass('show_trust_badges'); @endphp
+        @if($trustClass !== 'hidden')
+            <div class="hidden md:block {{ $trustClass }}"> 
+                {{-- Truyền mảng cấu hình Trust Badges xuống con --}}
+                @livewire('website.home.trust-badges', [
+                    'lazy' => true,
+                    'badges' => $settings['trust_badges'] ?? []
+                ])
+            </div>
+        @endif
 
         {{-- 9. Blog --}}
-        @php $blogClass = $this->getVisibilityClass('show_blog'); @endphp
+        @php $blogClass = $this->getVisibilityClass('show_blog-highlight'); @endphp
         @if($blogClass !== 'hidden')
             <div class="{{ $blogClass }}">
                 @livewire('website.home.blog-highlight', ['lazy' => true])
@@ -76,6 +87,7 @@
         @endif
 
         {{-- 10. Newsletter --}}
+        {{-- Luôn hiển thị hoặc kiểm tra config show_newsletter --}}
         @livewire('website.home.newsletter-signup', ['lazy' => true])
 
     </div>

@@ -3,20 +3,36 @@
         @if ($products && count($products) > 0)
 
             {{-- HEADER: Hiệu ứng rực lửa --}}
-            <div class="text-center mb-10 relative">
-                <h2
-                    class="text-3xl md:text-4xl font-black text-gray-900 uppercase tracking-tight inline-flex items-center gap-2 relative z-10">
-                    <span class="text-orange-500 animate-pulse">🔥</span>
-                    TOP BÁN CHẠY
-                    <span class="text-orange-500 animate-pulse">🔥</span>
-                </h2>
-                <p class="text-gray-500 text-sm mt-2 font-medium">Săn ngay kẻo lỡ - Cập nhật liên tục</p>
-
-                {{-- Chữ nền trang trí --}}
-                <span
-                    class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-6xl md:text-8xl font-black text-gray-100 uppercase tracking-widest whitespace-nowrap pointer-events-none -z-0">
+            <div class="text-center mb-12 relative py-4">
+                {{-- Chữ nền trang trí (Làm mờ đi và dùng font Stroke nếu muốn) --}}
+                <span class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-7xl md:text-9xl font-black text-gray-50 uppercase tracking-widest whitespace-nowrap pointer-events-none select-none z-0 opacity-60">
                     BEST SELLER
                 </span>
+            
+                <div class="relative z-10">
+                    {{-- Badge nhỏ phía trên --}}
+                    <span class="inline-block py-1 px-3 rounded-full bg-orange-50 text-orange-600 text-xs font-bold tracking-wider mb-2 border border-orange-100">
+                        HOT COLLECTION
+                    </span>
+            
+                    {{-- Tiêu đề chính --}}
+                    <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 uppercase tracking-tight flex items-center justify-center gap-3">
+                        {{-- Icon SVG thay cho Emoji --}}
+                        <svg class="w-8 h-8 text-orange-500 drop-shadow-sm" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-6h2v6zm4 0h-2v-8h2v8zm-8 0H5v-4h2v4z"/>
+                        </svg>
+                        <span class="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900">
+                            TOP BÁN CHẠY
+                        </span>
+                    </h2>
+            
+                    {{-- Gạch chân trang trí --}}
+                    <div class="w-16 h-1 bg-orange-500 mx-auto mt-4 rounded-full"></div>
+                    
+                    <p class="text-gray-500 text-sm mt-4 font-medium max-w-lg mx-auto">
+                        Những sản phẩm được yêu thích nhất tuần qua. Săn ngay kẻo lỡ!
+                    </p>
+                </div>
             </div>
 
             {{-- PRODUCT GRID --}}
