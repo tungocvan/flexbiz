@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
         $middleware->web(append: [
             \Modules\Website\Http\Middleware\TrackAffiliate::class, // Trỏ đúng namespace Module
+            \Modules\Website\Http\Middleware\ShareWishlistData::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

@@ -9,7 +9,7 @@ use App\Models\User; // Giả sử User model mặc định của Laravel
 
 class Cart extends Model
 {
-    protected $fillable = ['session_id', 'user_id'];
+    protected $fillable = ['session_id', 'user_id','coupon_id'];
 
     public function items(): HasMany
     {
@@ -19,5 +19,9 @@ class Cart extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+    public function coupon()
+    {
+        return $this->belongsTo(Coupon::class);
     }
 }

@@ -37,4 +37,9 @@ class AccountController extends Controller
     public function profile() {
         return view('Website::pages.account.profile');
     }
+    public function wishlist()
+    {
+        // Chỉ trả về view, logic lấy dữ liệu sẽ do Livewire đảm nhận
+        return view('Website::pages.account.wishlist');
+    }
 }

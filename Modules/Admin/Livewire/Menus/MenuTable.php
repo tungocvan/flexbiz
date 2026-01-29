@@ -6,6 +6,8 @@ use Livewire\Component;
 use Livewire\WithFileUploads;
 use Modules\Website\Models\Category;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+
 
 class MenuTable extends Component
 {
@@ -91,22 +93,36 @@ class MenuTable extends Component
     // --- 2. CHỨC NĂNG EXPORT ---
     public function export()
     {
-        // Lấy cấu trúc cây để export (Eager load children)
+        // Lấy cấu trúc cây để export
         $menus = Category::menu()
             ->whereNull('parent_id')
-            ->with('children') // Lưu ý: Hàm children trong model phải đệ quy hoặc ta dùng hàm custom
+            ->with('children')
             ->orderBy('sort_order')
             ->get();
 
-        // Biến đổi collection thành mảng đệ quy sạch sẽ
+        // Build data đệ quy
         $data = $this->buildTreeData($menus);
 
+        // Encode JSON một lần
+        $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+        // ===== LƯU FILE SEEDER =====
+        $seederPath = base_path('Modules/Website/database/Seeders/menu.json');
+
+        // Đảm bảo thư mục tồn tại
+        File::ensureDirectoryExists(dirname($seederPath));
+
+        // Ghi file
+        File::put($seederPath, $json);
+
+        // ===== DOWNLOAD =====
         $fileName = 'menu_backup_' . date('Y-m-d_His') . '.json';
 
-        return response()->streamDownload(function () use ($data) {
-            echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+        return response()->streamDownload(function () use ($json) {
+            echo $json;
         }, $fileName);
     }
+
 
     private function buildTreeData($categories)
     {
@@ -131,37 +147,67 @@ class MenuTable extends Component
     }
 
     // --- 3. CHỨC NĂNG IMPORT ---
+
+
     public function import()
     {
-        $this->validate(['importFile' => 'required|mimes:json,txt|max:2048']);
-
         try {
-            $content = file_get_contents($this->importFile->getRealPath());
+            // ===== 1. XÁC ĐỊNH NGUỒN FILE =====
+            if ($this->importFile) {
+                // Có upload file
+                $this->validate([
+                    'importFile' => 'mimes:json,txt|max:2048'
+                ]);
+
+                $content = file_get_contents($this->importFile->getRealPath());
+            } else {
+                // Không upload → dùng file seed mặc định
+                $seedPath = base_path('Modules/Website/database/Seeders/menu.json');
+
+                if (!File::exists($seedPath)) {
+                    throw new \Exception('Không có file upload và không tìm thấy menu.json trong Seeder.');
+                }
+
+                $content = File::get($seedPath);
+            }
+
+            // ===== 2. PARSE JSON =====
             $json = json_decode($content, true);
 
-            if (!is_array($json)) throw new \Exception("File JSON không hợp lệ.");
+            if (!is_array($json)) {
+                throw new \Exception('File JSON không hợp lệ.');
+            }
 
-            // Biến đếm kết quả
+            // ===== 3. BIẾN ĐẾM =====
             $countSuccess = 0;
             $countSkip = 0;
 
             DB::transaction(function () use ($json, &$countSuccess, &$countSkip) {
 
-                // Lấy sort_order lớn nhất hiện tại để nối tiếp vào cuối (nếu tạo mới)
-                $maxSort = Category::menu()->whereNull('parent_id')->max('sort_order') ?? 0;
+                // sort_order cho root menu
+                $maxSort = Category::menu()
+                    ->whereNull('parent_id')
+                    ->max('sort_order') ?? 0;
 
                 foreach ($json as $item) {
                     $maxSort++;
-                    $this->recursiveImport($item, null, $maxSort, $countSuccess, $countSkip);
+                    $this->recursiveImport(
+                        $item,
+                        null,
+                        $maxSort,
+                        $countSuccess,
+                        $countSkip
+                    );
                 }
             });
 
+            // ===== 4. RESET UI =====
             $this->showImportModal = false;
             $this->importFile = null;
 
-            // Thông báo chi tiết
+            // ===== 5. NOTIFY =====
             $msg = "Import hoàn tất: Thêm mới {$countSuccess}, Bỏ qua {$countSkip} (do trùng).";
-            $type = ($countSuccess > 0) ? 'success' : 'warning';
+            $type = $countSuccess > 0 ? 'success' : 'warning';
 
             $this->dispatch('notify', content: $msg, type: $type);
 
@@ -169,6 +215,7 @@ class MenuTable extends Component
             $this->addError('importFile', 'Lỗi: ' . $e->getMessage());
         }
     }
+
 
     private function recursiveImport($item, $parentId, $sortOrder, &$countSuccess, &$countSkip)
     {

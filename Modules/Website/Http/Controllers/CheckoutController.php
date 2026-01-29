@@ -32,4 +32,5 @@ class CheckoutController extends Controller
 
         return view('Website::checkout.success', compact('order'));
     }
+
 }

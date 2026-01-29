@@ -25,7 +25,10 @@ class HomeSettingService
             'show_featured'     => $settings['home_show_featured']->value ?? 'all',
             'show_new_arrivals' => $settings['home_show_new_arrivals']->value ?? 'all',
             'show_best_sellers' => $settings['home_show_best_sellers']->value ?? 'all',
-            'show_blog'         => $settings['home_show_blog']->value ?? 'all',
+            'show_blog_highlight'         => $settings['home_show_blog_highlight']->value ?? 'all',
+            'show_promo_banner'         => $settings['home_show_promo_banner']->value ?? 'all',
+            'show_trust_badges'         => $settings['home_show_trust_badges']->value ?? 'all',
+            'show_newsletter'         => $settings['home_show_newsletter']->value ?? 'all',
             // End 1.
 
             'category_ids'      => $this->parseJson($settings['home_category_ids'] ?? null),

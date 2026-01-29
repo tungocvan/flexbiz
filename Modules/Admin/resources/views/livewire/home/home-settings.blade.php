@@ -46,7 +46,10 @@
                         'show_featured' => ['Sản phẩm nổi bật', 'Khối sản phẩm ghim thủ công'],
                         'show_new_arrivals' => ['Hàng mới về', 'Sản phẩm mới nhất tự động'],
                         'show_best_sellers' => ['Top bán chạy', 'Sản phẩm bán chạy nhất'],
-                        'show_blog_highlight' => ['Tin tức / Blog', 'Bài viết mới nhất'],                     
+                        'show_blog_highlight' => ['Tin tức / Blog', 'Bài viết mới nhất'],
+                        'show_promo_banner' => ['Banner Quảng cáo', 'Quảng cáo Banner'],
+                        'show_trust_badges' => ['Các Icon service', 'Các dịch vụ quảng cáo'],
+                        'show_newsletter' => ['Newletter', 'Liên hệ'],
                     ];
                 @endphp
 

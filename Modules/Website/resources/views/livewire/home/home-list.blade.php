@@ -69,7 +69,7 @@
         {{-- 8. Trust Badges --}}
         @php $trustClass = $this->getVisibilityClass('show_trust_badges'); @endphp
         @if($trustClass !== 'hidden')
-            <div class="hidden md:block {{ $trustClass }}"> 
+            <div class="hidden md:block {{ $trustClass }}">
                 {{-- Truyền mảng cấu hình Trust Badges xuống con --}}
                 @livewire('website.home.trust-badges', [
                     'lazy' => true,
@@ -79,7 +79,7 @@
         @endif
 
         {{-- 9. Blog --}}
-        @php $blogClass = $this->getVisibilityClass('show_blog-highlight'); @endphp
+        @php $blogClass = $this->getVisibilityClass('show_blog_highlight'); @endphp
         @if($blogClass !== 'hidden')
             <div class="{{ $blogClass }}">
                 @livewire('website.home.blog-highlight', ['lazy' => true])
@@ -88,7 +88,13 @@
 
         {{-- 10. Newsletter --}}
         {{-- Luôn hiển thị hoặc kiểm tra config show_newsletter --}}
-        @livewire('website.home.newsletter-signup', ['lazy' => true])
+
+        @php $newsletterClass = $this->getVisibilityClass('show_newsletter'); @endphp
+        @if($newsletterClass !== 'hidden')
+            <div class="{{ $blogClass }}">
+                @livewire('website.home.newsletter-signup', ['lazy' => true])
+            </div>
+        @endif
 
     </div>
 </div>

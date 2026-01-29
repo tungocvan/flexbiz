@@ -3,6 +3,8 @@
 namespace Modules\Website\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany; // <--- Nhớ import dòng này
+use Modules\Website\Models\Wishlist; // <--- Import Model Wishlist
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Builder;
@@ -139,5 +141,9 @@ class WpProduct extends Model
     public function getReviewCountAttribute()
     {
         return $this->reviews()->count();
+    }
+    public function wishlists(): HasMany
+    {
+        return $this->hasMany(Wishlist::class, 'product_id');
     }
 }

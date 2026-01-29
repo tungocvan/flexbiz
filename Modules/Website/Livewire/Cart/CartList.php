@@ -4,61 +4,69 @@ namespace Modules\Website\Livewire\Cart;
 
 use Livewire\Component;
 use Livewire\Attributes\Computed;
-use Illuminate\Support\Facades\Session;
-use Modules\Website\Models\Cart;
-use Modules\Website\Models\CartItem;
+use Modules\Website\Services\CartService;
+use Illuminate\Support\Facades\App;
 
 class CartList extends Component
 {
-    // Ngưỡng Freeship (Ví dụ 1 triệu)
-    public $freeShippingThreshold = 1000000;
+    public $couponCodeInput = '';
+
+    // Inject Service (Laravel 12 style hoặc boot)
+    protected function getCartService()
+    {
+        return App::make(CartService::class);
+    }
 
     #[Computed]
     public function cartData()
     {
-        $sessionId = Session::getId();
-        $cart = Cart::with(['items.product'])
-            ->where('session_id', $sessionId)
-            ->first();
-
-        return [
-            'cart' => $cart,
-            'items' => $cart ? $cart->items : collect([]),
-            'subtotal' => $cart ? $cart->items->sum('total') : 0,
-        ];
+        return $this->getCartService()->getCartSummary();
     }
 
     public function increment($itemId)
     {
-        $item = CartItem::find($itemId);
+        $item = $this->cartData['items']->where('id', $itemId)->first();
         if ($item) {
-            $item->increment('quantity');
-            $this->recalculateItem($item);
+            try {
+                $this->getCartService()->updateQuantity($itemId, $item->quantity + 1);
+                $this->dispatch('cart-updated'); // Để update header cart number nếu có
+            } catch (\Exception $e) {
+                $this->dispatch('notify', ['type' => 'error', 'message' => $e->getMessage()]);
+            }
         }
     }
 
     public function decrement($itemId)
     {
-        $item = CartItem::find($itemId);
+        $item = $this->cartData['items']->where('id', $itemId)->first();
         if ($item && $item->quantity > 1) {
-            $item->decrement('quantity');
-            $this->recalculateItem($item);
+            $this->getCartService()->updateQuantity($itemId, $item->quantity - 1);
+            $this->dispatch('cart-updated');
         }
     }
 
     public function remove($itemId)
     {
-        CartItem::destroy($itemId);
+        $this->getCartService()->removeItem($itemId);
         $this->dispatch('cart-updated');
-        $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa sản phẩm khỏi giỏ hàng']);
+        $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa sản phẩm']);
     }
 
-    private function recalculateItem($item)
+    public function applyCoupon()
     {
-        // Tính lại giá total của item
-        $item->total = $item->quantity * $item->price;
-        $item->save();
-        $this->dispatch('cart-updated');
+        try {
+            $this->getCartService()->applyCoupon($this->couponCodeInput);
+            $this->dispatch('notify', ['type' => 'success', 'message' => 'Áp dụng mã giảm giá thành công!']);
+            $this->couponCodeInput = ''; // Reset input
+        } catch (\Exception $e) {
+            $this->dispatch('notify', ['type' => 'error', 'message' => $e->getMessage()]);
+        }
+    }
+
+    public function removeCoupon()
+    {
+         $this->getCartService()->removeCoupon();
+         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã gỡ mã giảm giá']);
     }
 
     public function render()

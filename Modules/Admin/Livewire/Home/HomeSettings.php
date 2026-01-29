@@ -214,7 +214,7 @@ class HomeSettings extends Component
             // Chuyển đổi Boolean sang String nếu View Admin dùng Checkbox (True/False)
             if ($value === true || $value === '1') $value = 'all';
             if ($value === false || $value === '0') $value = 'hidden';
-            
+
             Setting::updateOrCreate(
                 ['key' => 'home_' . $key],
                 ['value' => $value, 'group_name' => 'homepage']

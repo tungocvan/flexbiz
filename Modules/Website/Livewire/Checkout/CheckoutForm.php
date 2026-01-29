@@ -29,17 +29,33 @@ class CheckoutForm extends Component
         return (new CheckoutRequest())->messages();
     }
 
+
+
     public function mount()
     {
         if (Auth::check()) {
             $user = Auth::user();
             $this->customer_name = $user->name;
             $this->customer_email = $user->email;
-            // $this->customer_phone = $user->phone; 
-            // $this->customer_address = $user->address;
+
+            // --- FIX LỖI TẠI ĐÂY ---
+            // Chỉ gán nếu user thực sự có dữ liệu, dùng toán tử ?? để tránh lỗi null
+            $this->customer_phone = $user->phone ?? '';
+
+            // Nếu bảng users không có cột address hoặc chưa set, thì để rỗng
+            // Kiểm tra xem User có quan hệ addresses hay cột address không
+            $this->customer_address = $user->address ?? '';
+
+            // Nếu bạn dùng bảng user_addresses riêng, hãy bỏ comment dòng dưới:
+            /*
+            $defaultAddress = $user->addresses()->where('is_default', true)->first();
+            if ($defaultAddress) {
+                $this->customer_address = $defaultAddress->full_address ?? $defaultAddress->address;
+                $this->customer_phone = $defaultAddress->phone ?? $user->phone;
+            }
+            */
         }
     }
-
     /**
      * Hành động đặt hàng - Gọi Service
      */
