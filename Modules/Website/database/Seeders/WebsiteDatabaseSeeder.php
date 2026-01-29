@@ -35,8 +35,7 @@ class WebsiteDatabaseSeeder extends Seeder
             CategorySeeder::class,
             // 3. Tạo sản phẩm (gắn với danh mục)
             ProductSeeder::class,
-             // Tạo sản phẩm khuyến mãi
-            FlashSaleSeeder::class,
+
             // Tạo danh mục bài viết
             PostCategorySeeder::class,
             // Tạo bài viết
@@ -50,6 +49,8 @@ class WebsiteDatabaseSeeder extends Seeder
             // 5. Tạo menu sidebar
             MenuCategorySeeder::class,
             ReviewSeeder::class,
+            // Tạo sản phẩm khuyến mãi
+            FlashSaleSeeder::class,
             AffiliateSeeder::class,
         ]);
     }

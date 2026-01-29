@@ -3,40 +3,33 @@
 namespace Modules\Website\Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Modules\Website\Models\Review; // Tạo model này nếu chưa có
+use Modules\Website\Models\Review;
 use Modules\Website\Models\WpProduct;
-use Illuminate\Support\Facades\DB;
 
 class ReviewSeeder extends Seeder
 {
     public function run()
     {
-        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        Review::truncate();
-        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-
         $products = WpProduct::all();
-        $comments = [
-            'Sản phẩm quá tuyệt vời, đóng gói cẩn thận!',
-            'Giao hàng hơi chậm nhưng chất lượng tốt.',
-            'Đúng như mô tả, sẽ ủng hộ shop tiếp.',
-            'Vải đẹp, mặc mát, 5 sao nhé!',
-            'Màu sắc bên ngoài đẹp hơn trong ảnh.'
+        $realComments = [
+            5 => ['Tuyệt vời, shop phục vụ rất tốt!', 'Giao hàng nhanh như chớp, sản phẩm xịn.', 'Rất đáng đồng tiền bát gạo.', 'Đã mua lần 2 và vẫn rất ưng ý.'],
+            4 => ['Sản phẩm tốt nhưng đóng gói hơi nhăn.', 'Chất lượng ổn, phù hợp túi tiền.', 'Dùng khá mượt, sẽ giới thiệu bạn bè.'],
+            3 => ['Hàng tạm ổn, giao hơi chậm chút.', 'Màu sắc hơi khác so với ảnh nhưng vẫn dùng được.'],
         ];
 
         foreach ($products as $product) {
-            // Mỗi sản phẩm tạo 3-5 đánh giá
-            for ($i = 0; $i < rand(3, 5); $i++) {
+            for ($i = 0; $i < rand(2, 5); $i++) {
+                $rating = rand(3, 5);
                 Review::create([
                     'product_id' => $product->id,
-                    'user_id' => 1, // Admin hoặc random user
-                    'rating' => rand(4, 5), // Chủ yếu cho 4-5 sao cho đẹp
-                    'comment' => $comments[array_rand($comments)],
+                    'user_id' => 1,
+                    'rating' => $rating,
+                    'comment' => collect($realComments[$rating])->random(),
                     'is_approved' => true,
-                    'created_at' => now()->subDays(rand(1, 30)),
+                    'created_at' => now()->subDays(rand(1, 60)),
                 ]);
             }
         }
-        $this->command->info('✅ ReviewSeeder: Đã tạo đánh giá mẫu.');
+        $this->command->info('✅ ReviewSeeder: Đã tạo đánh giá khách hàng thực tế.');
     }
 }

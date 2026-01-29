@@ -74,4 +74,14 @@ class Order extends Model
     {
         return $this->hasMany(OrderHistory::class)->orderBy('created_at', 'desc'); // Mới nhất lên đầu
     }
+    // Thêm phương thức để tính toán lại tổng hoa hồng từ các items con
+    public function recalculateTotalCommission(): float
+    {
+        // Sum toàn bộ commission_amount của các item thuộc order này
+        $total = $this->items()->sum('commission_amount');
+        
+        $this->update(['commission_amount' => $total]);
+        
+        return $total;
+    }
 }

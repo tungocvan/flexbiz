@@ -5,6 +5,7 @@ namespace Modules\Website\Livewire\Cart;
 use Livewire\Component;
 use Livewire\Attributes\Computed;
 use Modules\Website\Services\CartService;
+use Modules\Website\Models\CartItem;
 use Illuminate\Support\Facades\App;
 
 class CartList extends Component
@@ -15,7 +16,7 @@ class CartList extends Component
     protected function getCartService()
     {
         return App::make(CartService::class);
-    }
+    } 
 
     #[Computed]
     public function cartData()
@@ -25,11 +26,18 @@ class CartList extends Component
 
     public function increment($itemId)
     {
-        $item = $this->cartData['items']->where('id', $itemId)->first();
+        // 1. Query trực tiếp từ DB để lấy số lượng tươi mới nhất (Tránh lỗi cache Computed)
+        $item = CartItem::find($itemId);
+
         if ($item) {
             try {
+                // 2. Gọi Service update
                 $this->getCartService()->updateQuantity($itemId, $item->quantity + 1);
-                $this->dispatch('cart-updated'); // Để update header cart number nếu có
+                
+                // 3. QUAN TRỌNG: Xóa cache computed để View render lại dữ liệu mới
+                unset($this->cartData); 
+
+                $this->dispatch('cart-updated');
             } catch (\Exception $e) {
                 $this->dispatch('notify', ['type' => 'error', 'message' => $e->getMessage()]);
             }
@@ -38,16 +46,28 @@ class CartList extends Component
 
     public function decrement($itemId)
     {
-        $item = $this->cartData['items']->where('id', $itemId)->first();
+        // Tương tự increment
+        $item = CartItem::find($itemId);
+
         if ($item && $item->quantity > 1) {
-            $this->getCartService()->updateQuantity($itemId, $item->quantity - 1);
-            $this->dispatch('cart-updated');
+            try {
+                $this->getCartService()->updateQuantity($itemId, $item->quantity - 1);
+                
+                // Xóa cache computed
+                unset($this->cartData);
+
+                $this->dispatch('cart-updated');
+            } catch (\Exception $e) {
+                $this->dispatch('notify', ['type' => 'error', 'message' => $e->getMessage()]);
+            }
         }
     }
 
     public function remove($itemId)
     {
         $this->getCartService()->removeItem($itemId);
+        // Xóa cache computed
+        unset($this->cartData);
         $this->dispatch('cart-updated');
         $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã xóa sản phẩm']);
     }

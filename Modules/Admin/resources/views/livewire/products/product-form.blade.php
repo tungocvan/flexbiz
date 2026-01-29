@@ -133,6 +133,43 @@
                 <x-currency-input wire:model="regular_price" label="Giá bán thường" required="true" class="mb-4" />
 
                 <x-currency-input wire:model="sale_price" label="Giá khuyến mãi" class="mb-4" />
+                <hr class="my-6 border-gray-100">
+
+        {{-- PHẦN MỚI: CẤU HÌNH HOA HỒNG AFFILIATE --}}
+        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+            <div class="flex items-center gap-2 mb-3">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <h4 class="text-xs font-bold text-blue-900 uppercase tracking-wider">Cấu hình Affiliate</h4>
+            </div>
+
+            <div class="space-y-3">
+                <label class="block text-sm font-medium text-gray-700">Tỷ lệ hoa hồng (%)</label>
+                <div class="relative mt-1 rounded-md shadow-sm">
+                    <input type="number" 
+                           step="0.01" 
+                           wire:model="affiliate_commission_rate"
+                           class="block w-full rounded-md border-0 py-2.5 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm"
+                           placeholder="Mặc định: 10">
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <span class="text-gray-500 sm:text-sm">%</span>
+                    </div>
+                </div>
+                
+                <div class="flex gap-2">
+                    <div class="flex-shrink-0">
+                        <svg class="h-4 w-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <p class="text-[11px] text-blue-700 leading-relaxed italic">
+                        Lưu ý: Nếu để trống, hệ thống sẽ tự động áp dụng mức 10% hoa hồng chung.
+                    </p>
+                </div>
+            </div>
+        </div>
+ 
 
             </div>
 

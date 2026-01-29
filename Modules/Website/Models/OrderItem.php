@@ -9,12 +9,16 @@ class OrderItem extends Model
 {
     protected $fillable = [
         'order_id', 'product_id',
-        'product_name', 'price', 'quantity', 'total', 'options' // <--- Thêm options
+        'product_name', 'price', 'quantity', 'total', 'options', // <--- Thêm options
+        'commission_rate',   // <--- MỚI: % hoa hồng lúc mua
+        'commission_amount'  // <--- MỚI: Tiền hoa hồng của item này
     ];
 
     // Tự động chuyển JSON sang Mảng khi lấy ra
     protected $casts = [
         'options' => 'array',
+        'commission_rate' => 'decimal:2',
+        'commission_amount' => 'decimal:2',
     ];
 
     public function order(): BelongsTo

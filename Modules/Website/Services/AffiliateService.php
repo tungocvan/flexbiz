@@ -76,8 +76,47 @@ class AffiliateService
     public function getAffiliateOrderDetail($orderId, $affiliateId)
     {
         return Order::where('id', $orderId)
-            ->where('affiliate_id', $affiliateId) // Bảo mật: Chỉ xem được đơn mình giới thiệu
-            ->with('items')
+            ->where('affiliate_id', $affiliateId)
+            ->with(['items']) // Load items để lấy commission_rate và commission_amount
             ->firstOrFail();
+    }
+    /**
+     * Tính toán hoa hồng chi tiết cho từng sản phẩm trong giỏ hàng
+     * @param array $cartItems Danh sách sản phẩm từ giỏ hàng
+     * @return array Trả về mảng chứa thông tin hoa hồng để lưu vào OrderItem
+     */
+    public function calculateItemsCommission(array $cartItems): array
+    {
+        $defaultRate = 10; // Tỷ lệ mặc định 10% (Có thể lấy từ config/database settings)
+        $processedItems = [];
+        $totalOrderCommission = 0;
+
+        foreach ($cartItems as $item) {
+            // 1. Lấy thông tin sản phẩm từ DB để lấy % hoa hồng cấu hình riêng
+            $product = \Modules\Website\Models\WpProduct::find($item['product_id']);
+
+            // 2. Xác định tỷ lệ: Ưu tiên rate tại SP, nếu null thì dùng mặc định
+            $rate = ($product && $product->affiliate_commission_rate !== null)
+                ? (float)$product->affiliate_commission_rate
+                : (float)$defaultRate;
+
+            // 3. Tính số tiền hoa hồng cho dòng hàng này
+            // Công thức: (Giá * Số lượng) * (Tỷ lệ / 100)
+            $itemTotal = (float)$item['price'] * (int)$item['quantity'];
+            $commissionAmount = ($itemTotal * $rate) / 100;
+
+            $processedItems[] = [
+                'product_id'        => $item['product_id'],
+                'commission_rate'   => $rate,
+                'commission_amount' => $commissionAmount,
+            ];
+
+            $totalOrderCommission += $commissionAmount;
+        }
+
+        return [
+            'items' => $processedItems,
+            'total_commission' => $totalOrderCommission
+        ];
     }
 }

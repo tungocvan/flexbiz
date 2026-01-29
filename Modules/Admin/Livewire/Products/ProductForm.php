@@ -19,7 +19,7 @@ class ProductForm extends Component
     public $regular_price, $sale_price;
     public $is_active = true;
     public $category_ids = [];
-
+    public $affiliate_commission_rate;
     // --- Images ---
     public $newImage;   // Ảnh đại diện mới
     public $oldImage;   // Ảnh đại diện cũ
@@ -47,7 +47,7 @@ class ProductForm extends Component
             $this->description = $product->description;
             $this->is_active = (bool) $product->is_active;
             $this->oldImage = $product->image;
-
+            $this->affiliate_commission_rate = $product->affiliate_commission_rate;
             // Danh mục
             $this->category_ids = $product->categories->pluck('id')->map(fn($i)=>(string)$i)->toArray();
 
@@ -107,7 +107,7 @@ class ProductForm extends Component
             'regular_price' => 'required|numeric|min:0',
             'category_ids' => 'array',
             'newImage' => 'nullable|image|max:5120',
-
+            'affiliate_commission_rate' => 'nullable|numeric|min:0|max:100',
             // Validate mảng ảnh mới
             'newGallery.*' => 'image|max:5120',
             'tags' => 'array',
@@ -135,6 +135,7 @@ class ProductForm extends Component
             'is_active' => $this->is_active,
             'tags' => $this->tags,        // Lưu mảng tags (Model tự cast JSON)
             'gallery' => $finalGallery,   // Lưu mảng gallery (Model tự cast JSON)
+            'affiliate_commission_rate' => $this->affiliate_commission_rate ?: null,
         ];
 
         if ($this->newImage) {

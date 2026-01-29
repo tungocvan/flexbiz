@@ -1,108 +1,72 @@
 <?php
 
-namespace Modules\Website\database\Seeders;
+namespace Modules\Website\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Modules\Website\Models\Order;
-use Modules\Website\Models\OrderItem;
 use Modules\Website\Models\WpProduct;
 use App\Models\User;
-use Illuminate\Support\Str;
 use Faker\Factory as Faker;
+use Illuminate\Support\Str;
 
 class OrderSeeder extends Seeder
 {
     public function run(): void
     {
         $faker = Faker::create('vi_VN');
-
-        // Lấy dữ liệu sản phẩm và user đã seed trước đó
         $products = WpProduct::all();
         $users = User::all();
+        $affiliates = User::take(3)->get(); // Lấy 3 user làm đối tác mẫu
 
-        if ($products->isEmpty()) {
-            $this->command->error('Cần chạy ProductSeeder trước!');
-            return;
-        }
-
-        // Tạo 20 đơn hàng mẫu
-        for ($i = 1; $i <= 20; $i++) {
-
-            // 1. Random Người mua (Có thể là User hoặc Khách vãng lai - null)
-            $user = ($i % 3 == 0) ? null : $users->random(); // 30% là khách vãng lai
-
-            // Thông tin khách hàng (Snapshot)
-            $customerName = $user ? $user->name : $faker->name;
-            $customerEmail = $user ? $user->email : $faker->safeEmail;
-            $customerPhone = $faker->phoneNumber;
-            $customerAddress = $faker->address;
-
-            // 2. Chọn ngẫu nhiên 1 đến 4 sản phẩm cho đơn hàng này
-            $orderItemsData = [];
+        for ($i = 0; $i < 30; $i++) {
             $subtotal = 0;
-
-            $randomProducts = $products->random(rand(1, 4));
-
+            $totalCommission = 0;
+            $orderItems = [];
+            
+            $randomProducts = $products->random(rand(1, 3));
             foreach ($randomProducts as $product) {
-                // Xác định giá bán (Ưu tiên giá sale nếu có)
-                $price = $product->sale_price > 0 ? $product->sale_price : $product->regular_price;
-                $qty = rand(1, 3);
+                $qty = rand(1, 2);
+                $price = $product->sale_price ?: $product->regular_price;
                 $lineTotal = $price * $qty;
+                
+                // Logic hoa hồng theo từng sản phẩm
+                $rate = $product->affiliate_commission_rate ?: 10;
+                $commissionAmount = ($lineTotal * $rate) / 100;
 
                 $subtotal += $lineTotal;
+                $totalCommission += $commissionAmount;
 
-                // Chuẩn bị dữ liệu để insert vào order_items sau
-                $orderItemsData[] = [
+                $orderItems[] = [
                     'product_id' => $product->id,
-                    'product_name' => $product->title, // Snapshot tên
-                    'price' => $price,                 // Snapshot giá
+                    'product_name' => $product->title,
+                    'price' => $price,
                     'quantity' => $qty,
                     'total' => $lineTotal,
-                    'options' => json_encode([ // Random options giả
-                        'Màu sắc' => $faker->randomElement(['Đen', 'Trắng', 'Xanh', 'Đỏ']),
-                        'Size' => $faker->randomElement(['S', 'M', 'L', 'XL'])
-                    ]),
+                    'commission_rate' => $rate,
+                    'commission_amount' => $commissionAmount, // Snapshot hoa hồng item
                 ];
             }
 
-            // 3. Tính toán tổng đơn hàng
-            $shippingFee = $subtotal > 2000000 ? 0 : 30000; // Freeship nếu > 2tr
-            $discount = rand(0, 1) ? rand(10, 50) * 1000 : 0; // Random giảm giá
-
-            // Đảm bảo không giảm giá quá tổng tiền
-            if ($discount > $subtotal) $discount = 0;
-
-            $total = $subtotal + $shippingFee - $discount;
-
-            // 4. Random Trạng thái
-            $status = $faker->randomElement(['pending', 'processing', 'shipping', 'completed', 'cancelled']);
-            $paymentMethod = $faker->randomElement(['cod', 'bank_transfer', 'vnpay']);
-
-            // 5. Tạo Order (wp_orders)
             $order = Order::create([
-                'user_id' => $user ? $user->id : null,
-                'order_code' => 'ORD-' . strtoupper(Str::random(5)) . $i, // Mã đơn unique
-                'customer_name' => $customerName,
-                'customer_phone' => $customerPhone,
-                'customer_email' => $customerEmail,
-                'customer_address' => $customerAddress,
-                'note' => $faker->sentence,
-
+                'order_code' => 'ORD-' . strtoupper(Str::random(6)),
+                'user_id' => rand(0, 1) ? $users->random()->id : null,
+                'affiliate_id' => rand(0, 1) ? $affiliates->random()->id : null,
+                'customer_name' => $faker->name,
+                'customer_phone' => $faker->phoneNumber,
+                'customer_address' => $faker->address,
                 'subtotal' => $subtotal,
-                'shipping_fee' => $shippingFee,
-                'discount' => $discount,
-                'total' => $total,
-
-                'payment_method' => $paymentMethod,
-                'status' => $status,
-                'created_at' => $faker->dateTimeBetween('-1 month', 'now'), // Random ngày trong tháng qua
+                'total' => $subtotal + 30000,
+                'commission_amount' => $totalCommission, // Tổng hoa hồng đơn hàng
+                'commission_status' => $faker->randomElement(['pending', 'approved', 'rejected']),
+                'status' => $faker->randomElement(['pending', 'processing', 'completed']),
+                'payment_method' => 'cod',
+                'created_at' => $faker->dateTimeBetween('-2 months', 'now'),
             ]);
 
-            // 6. Tạo Order Items (order_items)
-            foreach ($orderItemsData as $itemData) {
-                // Gán order_id vừa tạo vào item
-                $order->items()->create($itemData);
+            foreach ($orderItems as $item) {
+                $order->items()->create($item);
             }
         }
+        $this->command->info('✅ OrderSeeder: Đã tạo 30 đơn hàng chi tiết.');
     }
 }

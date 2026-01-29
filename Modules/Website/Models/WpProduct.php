@@ -30,7 +30,8 @@ class WpProduct extends Model
         'is_active',
         'is_featured',   // <--- Đã thêm
         'user_id',       // <--- Đã thêm
-        'views'          // <--- Đã thêm
+        'views',          // <--- Đã thêm
+        'affiliate_commission_rate'
     ];
 
     protected $casts = [
@@ -39,6 +40,7 @@ class WpProduct extends Model
         'tags' => 'array',
         'regular_price' => 'decimal:2',
         'sale_price' => 'decimal:2',
+        'affiliate_commission_rate' => 'decimal:2',
     ];
 
     /*

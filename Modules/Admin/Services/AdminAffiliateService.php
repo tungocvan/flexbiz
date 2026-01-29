@@ -24,24 +24,7 @@ class AdminAffiliateService
             ->paginate($perPage);
     }
 
-    /**
-     * Duyệt hoa hồng
-     */
-    public function approve($orderId)
-    {
-        $order = Order::findOrFail($orderId);
-        
-        if ($order->commission_status === 'approved') {
-            throw new Exception('Hoa hồng này đã được duyệt trước đó.');
-        }
-
-        $order->update(['commission_status' => 'approved']);
-        
-        // TODO: Tại đây có thể bắn Notification cho Affiliate User
-        // hoặc cộng tiền vào Ví thực (Wallet) nếu hệ thống có ví.
-        
-        return $order;
-    }
+   
 
     /**
      * Từ chối hoa hồng kèm lý do
@@ -49,7 +32,7 @@ class AdminAffiliateService
     public function reject($orderId, $reason)
     {
         $order = Order::findOrFail($orderId);
-        
+
         // Chỉ cho phép từ chối nếu chưa xử lý
         if ($order->commission_status !== 'pending') {
             throw new Exception('Trạng thái đơn hàng không hợp lệ để từ chối.');
@@ -64,8 +47,29 @@ class AdminAffiliateService
     }
     public function getOrderDetail($orderId)
     {
-        return Order::with(['items', 'user', 'affiliate'])
+        // Eager load 'items' để lấy commission_rate và commission_amount của từng món
+        return \Modules\Website\Models\Order::with(['items', 'user', 'affiliate'])
             ->findOrFail($orderId);
     }
-    
+
+    /**
+     * Duyệt hoa hồng (Bổ sung logic kiểm tra dữ liệu)
+     */
+    public function approve($orderId)
+    {
+        $order = \Modules\Website\Models\Order::findOrFail($orderId);
+
+        if ($order->commission_status === 'approved') {
+            throw new \Exception('Hoa hồng này đã được duyệt trước đó.');
+        }
+
+        // Thực hiện transaction để đảm bảo an toàn dữ liệu
+        return \DB::transaction(function () use ($order) {
+            $order->update(['commission_status' => 'approved']);
+
+            // TODO: Logic cộng tiền vào ví Affiliate tại đây
+
+            return $order;
+        });
+    }
 }
