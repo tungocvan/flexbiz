@@ -17,6 +17,8 @@ use Modules\Website\database\Seeders\FlashSaleSeeder;
 use Modules\Website\database\Seeders\FooterSeeder;
 use Modules\Website\database\Seeders\ReviewSeeder;
 use Modules\Website\database\Seeders\AffiliateSeeder;
+use Modules\Website\database\Seeders\AffiliateLevelSeeder;
+use Modules\Website\database\Seeders\AffiliateSchemeSeeder;
 
 
 class WebsiteDatabaseSeeder extends Seeder
@@ -52,6 +54,8 @@ class WebsiteDatabaseSeeder extends Seeder
             // Tạo sản phẩm khuyến mãi
             FlashSaleSeeder::class,
             AffiliateSeeder::class,
+            AffiliateLevelSeeder::class,
+            AffiliateSchemeSeeder::class
         ]);
     }
 }

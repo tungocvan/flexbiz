@@ -21,7 +21,7 @@ return new class extends Migration
             // Số tiền hoa hồng thực tế cho item này
             $table->decimal('commission_amount', 15, 2)->default(0)->after('commission_rate');
         });
-    }
+    } 
 
     public function down(): void
     {

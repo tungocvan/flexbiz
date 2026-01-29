@@ -4,6 +4,7 @@ namespace Modules\Website\Services;
 
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Auth;
+use Modules\Admin\Models\AffiliateScheme;
 use Modules\Website\Models\Order;
 
 class AffiliateService
@@ -117,6 +118,53 @@ class AffiliateService
         return [
             'items' => $processedItems,
             'total_commission' => $totalOrderCommission
+        ];
+    }
+
+    /**
+     * Tính toán hoa hồng Hybrid cho một sản phẩm cụ thể dựa trên User giới thiệu
+     */
+    public function calculateHybridCommission(int $productId, int $affiliateId, float $price, int $qty): array
+    {
+        $affiliate = \App\Models\User::with('level')->find($affiliateId);
+        $levelId = $affiliate?->affiliate_level_id;
+
+        // 1. Tìm cấu hình phù hợp nhất theo trọng số ưu tiên
+        $scheme = AffiliateScheme::where('product_id', $productId)
+            ->where(function ($query) use ($affiliateId, $levelId) {
+                $query->where('user_id', $affiliateId) // Ưu tiên 1: Cá nhân
+                      ->orWhere('level_id', $levelId); // Ưu tiên 2: Cấp bậc
+            })
+            ->where('is_active', true)
+            ->orderByRaw("user_id DESC") // Đảm bảo user_id (nếu có) luôn lên trước level_id
+            ->first();
+
+        // 2. Khởi tạo giá trị mặc định nếu không tìm thấy Scheme đặc biệt
+        $type = $scheme ? $scheme->commission_type : 'percentage';
+        $percent = 0;
+        $fixed = 0;
+
+        if ($scheme) {
+            $percent = (float)$scheme->percent_value;
+            $fixed = (float)$scheme->fixed_value;
+        } else {
+            // Mức 3: Lấy từ bảng wp_products
+            $product = WpProduct::find($productId);
+            $percent = $product->affiliate_commission_rate ?? 10; // Mức 4: Mặc định 10%
+        }
+
+        // 3. Thực thi công thức Hybrid
+        // Formula: (Price * Qty * %/100) + (Fixed * Qty)
+        $commissionFromPercent = ($price * $qty) * ($percent / 100);
+        $commissionFromFixed = $fixed * $qty;
+        $totalCommission = $commissionFromPercent + $commissionFromFixed;
+
+        return [
+            'type' => $type,
+            'rate' => $percent,
+            'fixed_unit_amount' => $fixed,
+            'total_amount' => $totalCommission,
+            'level_name' => $affiliate?->level?->name ?? 'Vãng lai'
         ];
     }
 }

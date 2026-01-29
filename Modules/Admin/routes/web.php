@@ -19,6 +19,7 @@ use Modules\Admin\Http\Controllers\BannerController;
 use Modules\Admin\Http\Controllers\FlashSaleController;
 use Modules\Admin\Http\Controllers\HeaderController;
 use Modules\Admin\Http\Controllers\FooterController;
+use Modules\Admin\Http\Controllers\ProductCommissionController;
 
 Route::middleware(['web'])->group(function () {
 
@@ -52,6 +53,9 @@ Route::middleware(['web'])->group(function () {
             Route::get('/', [ProductController::class, 'index'])->name('index');
             Route::get('/create', [ProductController::class, 'create'])->name('create');
             Route::get('/{id}/edit', [ProductController::class, 'edit'])->name('edit');
+            Route::prefix('{productId}')->group(function () {
+                Route::get('commissions', [ProductCommissionController::class, 'index'])->name('commissions');
+            });
         });
 
         Route::prefix('product-categories')->name('product-categories.')->group(function() {

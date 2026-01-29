@@ -63,13 +63,16 @@ class AdminAffiliateService
             throw new \Exception('Hoa hồng này đã được duyệt trước đó.');
         }
 
-        // Thực hiện transaction để đảm bảo an toàn dữ liệu
         return \DB::transaction(function () use ($order) {
             $order->update(['commission_status' => 'approved']);
-
-            // TODO: Logic cộng tiền vào ví Affiliate tại đây
-
+            
+            // GỌI LOGIC THĂNG HẠNG TẠI ĐÂY
+            $rankService = app(AffiliateRankService::class);
+            $rankService->checkAndUpdateRank($order->affiliate_id);
+            
             return $order;
         });
+
+       
     }
 }

@@ -5,6 +5,7 @@ namespace Modules\Admin\Livewire\Affiliate;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Modules\Admin\Services\AdminAffiliateService;
+use Modules\Admin\Models\AffiliateLevel;
 use Livewire\Attributes\On;
 use Livewire\Attributes\Url;
 
@@ -14,50 +15,28 @@ class CommissionList extends Component
 
     #[Url]
     public $statusFilter = 'all'; 
-    
+    #[Url]
+    public $levelFilter = 'all'; 
     #[Url]
     public $search = '';
 
-    // State cho Modal chi tiết
+    // Modal States
     public $selectedOrder = null;
     public $isModalOpen = false;
-
-    // State cho việc từ chối
     public $showRejectForm = false;
     public $rejectionReason = '';
 
-    protected $queryString = [
-        'statusFilter' => ['except' => 'all'],
-        'search' => ['except' => '']
-    ];
-
     /**
-     * Mở Modal xem chi tiết và đối soát hoa hồng
-     */
-    public function openDetail($orderId, AdminAffiliateService $service)
-    {
-        $this->selectedOrder = $service->getOrderDetail($orderId);
-        $this->isModalOpen = true;
-        $this->showRejectForm = false;
-        $this->rejectionReason = '';
-    }
-
-    public function closeModal()
-    {
-        $this->isModalOpen = false;
-        $this->selectedOrder = null;
-    }
-
-    /**
-     * Duyệt hoa hồng
+     * Duyệt hoa hồng & Kích hoạt thăng hạng tự động
      */
     public function approve($orderId, AdminAffiliateService $service)
     {
         try {
-            $service->approve($orderId);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã duyệt hoa hồng thành công!']);
+            $service->approve($orderId); 
+            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã duyệt hoa hồng & cập nhật hạng đối tác!']);
             
-            if ($this->isModalOpen) {
+            // Refresh dữ liệu nếu modal đang mở
+            if ($this->isModalOpen && $this->selectedOrder->id == $orderId) {
                 $this->selectedOrder = $service->getOrderDetail($orderId);
             }
         } catch (\Exception $e) {
@@ -72,14 +51,11 @@ class CommissionList extends Component
     {
         $this->validate([
             'rejectionReason' => 'required|min:5'
-        ], [
-            'rejectionReason.required' => 'Vui lòng nhập lý do từ chối.',
-            'rejectionReason.min' => 'Lý do quá ngắn.'
         ]);
 
         try {
             $service->reject($this->selectedOrder->id, $this->rejectionReason);
-            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã từ chối hoa hồng.']);
+            $this->dispatch('notify', ['type' => 'success', 'message' => 'Đã từ chối chi trả hoa hồng.']);
             
             $this->showRejectForm = false;
             $this->selectedOrder = $service->getOrderDetail($this->selectedOrder->id);
@@ -88,21 +64,31 @@ class CommissionList extends Component
         }
     }
 
-    #[On('refresh-commission-list')]
-    public function refreshList()
+    public function openDetail($orderId, AdminAffiliateService $service)
     {
-        // Livewire tự động render lại
+        $this->selectedOrder = $service->getOrderDetail($orderId);
+        $this->isModalOpen = true;
+        $this->showRejectForm = false;
+        $this->rejectionReason = '';
+    }
+
+    public function closeModal()
+    {
+        $this->isModalOpen = false;
+        $this->selectedOrder = null;
     }
 
     public function render(AdminAffiliateService $service)
     {
         $filters = [
             'status' => $this->statusFilter,
+            'level'  => $this->levelFilter,
             'search' => $this->search
         ];
 
         return view('Admin::livewire.affiliate.commission-list', [
-            'commissions' => $service->getCommissions($filters)
+            'commissions' => $service->getCommissions($filters),
+            'levels' => AffiliateLevel::all()
         ]);
     }
 }
