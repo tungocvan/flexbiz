@@ -26,10 +26,10 @@ class GeneralSettings extends Component
 
     public function mount(SettingsService $settingsService)
     {
-        $this->hotline = $settingsService->get('header.topbar.hotline');
-        $this->email = $settingsService->get('header.topbar.email');
-        $this->help_url = $settingsService->get('header.topbar.help_url');
-        $this->order_tracking_url = $settingsService->get('header.topbar.order_tracking_url');
+        $this->hotline = $settingsService->get('header.topbar.hotline','0903971949');
+        $this->email = $settingsService->get('header.topbar.email','tungocvan@gmail.com');
+        $this->help_url = $settingsService->get('header.topbar.help_url','/');
+        $this->order_tracking_url = $settingsService->get('header.topbar.order_tracking_url','account/orders');
         $this->brand_name = $settingsService->get('header.brand_name', 'FlexBiz');
     }
 
