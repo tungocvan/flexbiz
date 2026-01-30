@@ -28,7 +28,7 @@ Route::middleware(['web'])->group(function () use ($websitePrefix) {
     // ====================================================
     Route::get('/login', [AuthController::class, 'login'])->name('login');
     Route::get('/register', [AuthController::class, 'register'])->name('register');
-
+    
 
     // ====================================================
     // 2. AUTHENTICATION (Authenticated)
@@ -45,6 +45,7 @@ Route::middleware(['web'])->group(function () use ($websitePrefix) {
 
     // Trang chủ
     Route::get('/', [WebsiteController::class, 'home'])->name('home');
+    Route::get('/help', [WebsiteController::class, 'help'])->name('help');
 
     // Sản phẩm
     Route::get('/shop', [ProductController::class, 'index'])->name('product.list');

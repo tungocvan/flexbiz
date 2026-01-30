@@ -17,6 +17,7 @@ use Modules\Website\database\Seeders\PostCategorySeeder;
 use Modules\Website\database\Seeders\PostSeeder;
 use Modules\Website\database\Seeders\FlashSaleSeeder;
 use Modules\Website\database\Seeders\FooterSeeder;
+use Modules\Website\database\Seeders\FooterPostSeeder;
 use Modules\Website\database\Seeders\ReviewSeeder;
 use Modules\Website\database\Seeders\AffiliateSeeder;
 use Modules\Website\database\Seeders\AffiliateLevelSeeder;
@@ -50,6 +51,7 @@ class WebsiteDatabaseSeeder extends Seeder
             SettingSeeder::class,
             // Tạo dữ liệu mẫu Footer
             FooterSeeder::class,
+            FooterPostSeeder::class,
             // 4. Tạo đơn hàng (gắn với User và Sản phẩm)
             OrderSeeder::class,
             // 5. Tạo menu sidebar

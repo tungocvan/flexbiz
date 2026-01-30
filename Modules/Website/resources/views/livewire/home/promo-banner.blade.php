@@ -9,7 +9,7 @@
                         ? $banner['image']
                         : asset('storage/' . $banner['image']);
             @endphp
-
+ 
             <img src="{{ $imgUrl }}"
                  alt="{{ $banner['title'] ?? 'Promotion' }}"
                  loading="lazy"

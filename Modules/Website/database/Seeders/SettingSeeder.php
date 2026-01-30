@@ -28,7 +28,7 @@ class SettingSeeder extends Seeder
             ],
             [
                 'key' => 'header.topbar.help_url',
-                'value' => '/',
+                'value' => '/help',
                 'group_name' => 'header',
                 'type' => 'text',
                 'label' => 'Link Trợ giúp'

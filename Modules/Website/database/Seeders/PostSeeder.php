@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Modules\Website\Models\Post;
 use Modules\Website\Models\Category;
-
+// php artisan db:seed --class="Modules\Website\database\Seeders\PostSeeder"
 class PostSeeder extends Seeder
 {
     public function run(): void
@@ -36,8 +36,12 @@ class PostSeeder extends Seeder
         ];
 
         // 4. Tạo bài viết
-        for ($i = 1; $i <= 40; $i++) {
+        for ($i = 1; $i <= 41; $i++) {
             $name = "Bài viết chuyên sâu về xu hướng " . ($i * 10) . ": " . Str::random(5);
+            if($i==41) {
+                $name = "Thể lệ chương trình khuyến mãi tháng 10";
+            }
+            
             $slug = Str::slug($name); // Đảm bảo slug chuẩn URL
 
             // Nội dung giả lập HTML

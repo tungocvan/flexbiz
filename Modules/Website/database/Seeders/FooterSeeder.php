@@ -9,7 +9,8 @@ use Modules\Website\Models\Setting;
 use Modules\Website\Models\FooterColumn;
 use Modules\Website\Models\FooterLink;
 use Modules\Website\Models\SocialLink;
-
+use Illuminate\Support\Str;
+// php artisan db:seed --class="Modules\Website\database\Seeders\FooterSeeder"
 class FooterSeeder extends Seeder
 {
     /**
@@ -37,19 +38,19 @@ class FooterSeeder extends Seeder
             ],
             [
                 'key' => 'footer.address',
-                'value' => 'Tầng 12, Tòa nhà Bitexco, Q.1, TP.HCM',
+                'value' => '36 Nguyễn Minh Hoàng, Phường Bảy Hiền, TP.HCM',
                 'group_name' => 'footer',
                 'type' => 'text'
             ],
             [
                 'key' => 'footer.email',
-                'value' => 'contact@flexbiz.com',
+                'value' => 'tungocvan@gmail.com',
                 'group_name' => 'footer',
                 'type' => 'text'
             ],
             [
                 'key' => 'footer.phone',
-                'value' => '1900 123 456',
+                'value' => '0903 971 949',
                 'group_name' => 'footer',
                 'type' => 'text'
             ],
@@ -67,7 +68,7 @@ class FooterSeeder extends Seeder
             ],
             [
                 'key' => 'footer.copyright',
-                'value' => '© 2024 FlexBiz. All rights reserved.',
+                'value' => '© 2026 FlexBiz. All rights reserved.',
                 'group_name' => 'footer',
                 'type' => 'text'
             ],
@@ -96,7 +97,7 @@ class FooterSeeder extends Seeder
             ['label' => 'Câu chuyện thương hiệu', 'url' => '/blog/cau-chuyen-thuong-hieu', 'sort_order' => 1, 'is_active' => true],
             ['label' => 'Tuyển dụng', 'url' => '/blog/tuyen-dung', 'sort_order' => 2, 'is_active' => true],
             ['label' => 'Tin tức & Sự kiện', 'url' => '/blog', 'sort_order' => 3, 'is_active' => true],
-            ['label' => 'Liên hệ hợp tác', 'url' => '/contact', 'sort_order' => 4, 'is_active' => true],
+            ['label' => 'Liên hệ hợp tác', 'url' => '/blog/' . Str::slug('Liên hệ hợp tác'), 'sort_order' => 4, 'is_active' => true],
         ]);
 
         // Cột 2: Hỗ trợ khách hàng
@@ -106,13 +107,13 @@ class FooterSeeder extends Seeder
             'sort_order' => 2,
             'is_active' => true
         ]);
-
+ 
         $col2->links()->createMany([
-            ['label' => 'Trung tâm trợ giúp', 'url' => '/help-center', 'sort_order' => 1, 'is_active' => true],
-            ['label' => 'Hướng dẫn mua hàng', 'url' => '/guide/buying', 'sort_order' => 2, 'is_active' => true],
-            ['label' => 'Chính sách vận chuyển', 'url' => '/policy/shipping', 'sort_order' => 3, 'is_active' => true],
-            ['label' => 'Chính sách đổi trả', 'url' => '/policy/return', 'sort_order' => 4, 'is_active' => true],
-            ['label' => 'Kiểm tra đơn hàng', 'url' => '/order-tracking', 'sort_order' => 5, 'is_active' => true],
+            ['label' => 'Trung tâm trợ giúp', 'url' => '/blog/' . Str::slug('Trung tâm trợ giúp'), 'sort_order' => 1, 'is_active' => true],
+            ['label' => 'Hướng dẫn mua hàng', 'url' => '/blog/' . Str::slug('Hướng dẫn mua hàng'), 'sort_order' => 2, 'is_active' => true],
+            ['label' => 'Chính sách vận chuyển', 'url' => '/blog/' . Str::slug('Chính sách vận chuyển'), 'sort_order' => 3, 'is_active' => true],
+            ['label' => 'Chính sách đổi trả', 'url' => '/blog/' . Str::slug('Chính sách đổi trả'), 'sort_order' => 4, 'is_active' => true],
+            ['label' => 'Điều Khoản Dịch Vụ', 'url' => '/blog/' . Str::slug('Điều Khoản Dịch Vụ'), 'sort_order' => 5, 'is_active' => true],
         ]);
 
         // ---------------------------------------------------------

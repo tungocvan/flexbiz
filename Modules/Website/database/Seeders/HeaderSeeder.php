@@ -72,13 +72,13 @@ class HeaderSeeder extends Seeder
         ]);
 
         // Các mục con (Cấp 2)
-        $categories = ['Điện thoại', 'Laptop', 'Phụ kiện'];
+        $categories = ['Điện Thoại & Tablet', 'Laptop & Đồ Họa', 'Thời Trang Nam'];
         foreach ($categories as $index => $cat) {
             HeaderMenuItem::create([
-                'header_menu_id' => $menuId,
+                'header_menu_id' => $menuId, 
                 'parent_id' => $productParent->id,
                 'title' => $cat,
-                'url' => '/shop/' . Str::slug($cat),
+                'url' => '/shop?category=' . Str::slug($cat),
                 'sort_order' => $index,
                 'is_active' => true
             ]);

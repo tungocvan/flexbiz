@@ -7,7 +7,7 @@ use Modules\Website\Models\Post;
 use Modules\Website\Models\Category;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
-
+// php artisan db:seed --class="Modules\Website\database\Seeders\FooterPostSeeder"
 class FooterPostSeeder extends Seeder
 {
     public function run(): void
@@ -60,6 +60,18 @@ class FooterPostSeeder extends Seeder
             ],
 
             // --- NHÓM HỖ TRỢ KHÁCH HÀNG ---
+            [
+                'name' => 'Trung Tâm Trợ Giúp',
+                'slug' => 'trung-tam-tro-giup',
+                'summary' => 'Quy trình đặt hàng đơn giản chỉ với 3 bước.',
+                'content' => '
+                    <ol>
+                        <li><strong>Tìm kiếm sản phẩm:</strong> Sử dụng thanh tìm kiếm hoặc duyệt qua danh mục.</li>
+                        <li><strong>Thêm vào giỏ:</strong> Chọn màu sắc, kích thước và nhấn "Thêm vào giỏ".</li>
+                        <li><strong>Thanh toán:</strong> Nhập địa chỉ nhận hàng và chọn phương thức thanh toán an toàn.</li>
+                    </ol>
+                '
+            ],
             [
                 'name' => 'Hướng Dẫn Mua Hàng',
                 'slug' => 'huong-dan-mua-hang',

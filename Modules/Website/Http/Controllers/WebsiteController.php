@@ -20,6 +20,10 @@ class WebsiteController extends Controller
     {
         return view('Website::pages.home.index');
     }
+    public function help()
+    {
+        return view('Website::pages.help.index');
+    }
 
     /**
      * Show the form for creating a new resource.
