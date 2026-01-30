@@ -15,6 +15,7 @@ use Modules\Website\database\Seeders\SettingSeeder;
 use Modules\Website\database\Seeders\HeaderSeeder;
 use Modules\Website\database\Seeders\PostCategorySeeder;
 use Modules\Website\database\Seeders\PostSeeder;
+use Modules\Website\database\Seeders\CouponSeeder;
 use Modules\Website\database\Seeders\FlashSaleSeeder;
 use Modules\Website\database\Seeders\FooterSeeder;
 use Modules\Website\database\Seeders\FooterPostSeeder;
@@ -45,6 +46,7 @@ class WebsiteDatabaseSeeder extends Seeder
             PostCategorySeeder::class,
             // Tạo bài viết
             PostSeeder::class,
+            CouponSeeder::class,
             // Tạo slides
             ThemeSettingsSeeder::class,
             HeaderSeeder::class,
