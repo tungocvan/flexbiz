@@ -34,5 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'socket' => [
+        'url' => env('SOCKET_IO_HOST', 'https://flexbiz.nodejs.tk'),
+    ],
 
 ];

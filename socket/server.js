@@ -28,4 +28,15 @@ app.get("/", (req, res) => {
     res.send("NodeJS Socket.IO Server đang chạy trên cổng 6002 🚀");
 });
 
+app.post("/broadcast", (req, res) => {
+    const { channel, event, data } = req.body;
+
+    console.log("📦 Order from Laravel:", data.id);
+
+    io.emit(`${channel}:${event}`, data);
+
+    res.json({ ok: true });
+});
+
+
 app.use(express.json());
