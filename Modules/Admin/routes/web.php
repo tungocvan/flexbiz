@@ -29,6 +29,7 @@ Route::middleware(['web'])->group(function () {
     // Protected Routes
     Route::middleware(['web','auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/profile', [SettingController::class, 'profile'])->name('profile');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');
         Route::get('/homepage-settings', [HomeSettingsController::class, 'index'])

@@ -24,6 +24,7 @@ class BannerService
 
     public function save($data, $imageDesktop = null, $imageMobile = null)
     {
+        
         // 1. XỬ LÝ ẢNH DESKTOP (Max 1920x600)
         if ($imageDesktop) {
             // Xóa ảnh cũ nếu đang update

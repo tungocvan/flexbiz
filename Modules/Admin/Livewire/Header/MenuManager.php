@@ -13,6 +13,7 @@ class MenuManager extends Component
     public $menuLocations = [
         'primary' => 'Desktop Main Menu',
         'mobile' => 'Mobile Slide-over',
+        'admin' => 'Admin Menu Dropdown'
     ];
 
     // State cho Modal

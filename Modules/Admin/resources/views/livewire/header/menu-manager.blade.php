@@ -10,7 +10,7 @@
             </select>
         </div>
         {{-- Button kích hoạt Modal --}}
-        <button wire:click="openModal"
+        <button wire:click="openModal" 
                 class="bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-bold hover:bg-blue-700 shadow-sm transition">
             + Thêm mục mới
         </button>

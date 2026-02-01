@@ -10,4 +10,8 @@ class SettingController extends Controller
     {
         return view('Admin::pages.settings.index');
     }
+    public function profile()
+    {
+        return view('Admin::pages.settings.profile');
+    }
 }

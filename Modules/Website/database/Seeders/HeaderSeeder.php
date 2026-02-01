@@ -8,13 +8,15 @@ use Modules\Website\Models\HeaderMenu;
 use Modules\Website\Models\HeaderMenuItem;
 use Illuminate\Support\Str;
 
-// php artisan db:seed --class="Modules\Website\database\Seeders\HeaderSeeder"
-
 class HeaderSeeder extends Seeder
 {
+    /**
+     * Run the database seeds.
+     * php artisan db:seed --class="Modules\Website\database\Seeders\HeaderSeeder"
+     */
     public function run(): void
     {
-        // 1. Xóa sạch dữ liệu cũ
+        // 1. Xóa sạch dữ liệu cũ để tránh trùng lặp
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         HeaderMenuItem::truncate();
         HeaderMenu::truncate();
@@ -26,7 +28,6 @@ class HeaderSeeder extends Seeder
             'location' => 'primary',
             'is_active' => true
         ]);
-
         $this->createDefaultItems($primaryMenu->id);
 
         // 3. TẠO DỮ LIỆU CHO MOBILE (MOBILE)
@@ -35,12 +36,19 @@ class HeaderSeeder extends Seeder
             'location' => 'mobile',
             'is_active' => true
         ]);
-
         $this->createDefaultItems($mobileMenu->id);
+
+        // 4. TẠO DỮ LIỆU CHO ADMIN DROPDOWN (ADMIN)
+        $adminMenu = HeaderMenu::create([
+            'name' => 'Admin Menu Dropdown',
+            'location' => 'admin',
+            'is_active' => true
+        ]);
+        $this->createAdminItems($adminMenu->id);
     }
 
     /**
-     * Hàm phụ để tạo các mục menu giống nhau cho cả 2 vị trí
+     * Tạo các mục menu mặc định cho Frontend (Desktop & Mobile)
      */
     private function createDefaultItems($menuId)
     {
@@ -90,6 +98,28 @@ class HeaderSeeder extends Seeder
             'title' => 'Blog',
             'url' => '/blog',
             'sort_order' => 4,
+            'is_active' => true
+        ]);
+    }
+
+    /**
+     * Tạo các mục riêng cho Admin User Dropdown
+     */
+    private function createAdminItems($menuId)
+    {
+        HeaderMenuItem::create([
+            'header_menu_id' => $menuId,
+            'title' => 'Hồ sơ cá nhân',
+            'url' => '#', // Thay bằng route thực tế nếu có, ví dụ: route('admin.profile')
+            'sort_order' => 1,
+            'is_active' => true
+        ]);
+
+        HeaderMenuItem::create([
+            'header_menu_id' => $menuId,
+            'title' => 'Cài đặt',
+            'url' => '#', // Thay bằng route thực tế nếu có
+            'sort_order' => 2,
             'is_active' => true
         ]);
     }

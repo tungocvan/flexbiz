@@ -35,7 +35,7 @@ class BannerManager extends Component
     {
         $this->loadBanners($service);
     }
-
+ 
     public function loadBanners(BannerService $service)
     {
         $this->banners = $service->getAll();
