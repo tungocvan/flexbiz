@@ -2,7 +2,7 @@ import Echo from "laravel-echo";
 import { io } from "socket.io-client";
 
 // Lấy cấu hình từ biến global hoặc mặc định
-const SOCKET_HOST = window.CHAT_CONFIG_HOST || "flexbiz.nodejs.tk";
+const SOCKET_HOST = window.CHAT_CONFIG_HOST || "node.tungocvan.com";
 
 // Khởi tạo trực tiếp client
 const socket = io(`${SOCKET_HOST}`, {
@@ -28,6 +28,7 @@ window.socket = io(`${SOCKET_HOST}`, {
 
 socket.on("connect", () => {
     console.log("✅ Socket.IO connected (echo.js):", socket.id);
+    console.log("✅SOCKET_HOST: ", SOCKET_HOST );
 });
 
 socket.on("disconnect", () => {

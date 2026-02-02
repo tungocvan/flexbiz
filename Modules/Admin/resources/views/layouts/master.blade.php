@@ -14,6 +14,10 @@
     <title>@yield('title','HOMEPAGE')</title>
     {!! Setting::getValue('header_script') !!}
     @yield('css')
+    <script>
+        window.CHAT_CONFIG_HOST = "{{ env('CHAT_SOCKET_HOST', 'flexbiz.nodejs.tk') }}";
+        window.CHAT_CONFIG_PORT = "6002";
+    </script>
     {{-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> --}}
     @vite(['resources/css/tailwind.css', 'resources/js/tailwind.js'])
     @stack('styles')
