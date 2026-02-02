@@ -14,9 +14,9 @@
     <title>@yield('title','HOMEPAGE')</title>
     {!! Setting::getValue('header_script') !!}
     @yield('css')
-    <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
-    {{-- @vite(['resources/css/tailwind.css', 'resources/js/tailwind.js']) --}}
-
+    {{-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> --}}
+    @vite(['resources/css/tailwind.css', 'resources/js/tailwind.js'])
+    @stack('styles')
     @livewireStyles
 </head>
 
@@ -37,6 +37,7 @@
         </div>
     </div>
     @yield('js')
+    @stack('scripts')
     @livewireScripts
 </body>
 

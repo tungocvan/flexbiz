@@ -14,8 +14,9 @@
     {!! Setting::getValue('header_script') !!}
 
     {{-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> --}}
-    @yield('css')
     @vite(['resources/css/tailwind.css', 'resources/js/tailwind.js'])
+    @yield('css')
+    @stack('styles')
     @livewireStyles
 </head>
 <body class="bg-gray-50 text-gray-900 font-sans antialiased flex flex-col min-h-screen">
@@ -31,7 +32,7 @@
     </main>
 
     @include('Website::partials.footer')
-
+    @stack('scripts')
     @livewireScripts
 </body>
 </html>

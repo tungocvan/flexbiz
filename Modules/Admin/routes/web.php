@@ -20,6 +20,7 @@ use Modules\Admin\Http\Controllers\FlashSaleController;
 use Modules\Admin\Http\Controllers\HeaderController;
 use Modules\Admin\Http\Controllers\FooterController;
 use Modules\Admin\Http\Controllers\ProductCommissionController;
+use Modules\Admin\Http\Controllers\ChatController;
 
 Route::middleware(['web'])->group(function () {
 
@@ -29,6 +30,7 @@ Route::middleware(['web'])->group(function () {
     // Protected Routes
     Route::middleware(['web','auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+        Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
         Route::get('/profile', [SettingController::class, 'profile'])->name('profile');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
         Route::get('/affiliate', [AffiliateController::class, 'index'])->name('affiliate.index');

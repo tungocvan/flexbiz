@@ -1,23 +1,27 @@
 import Echo from "laravel-echo";
 import { io } from "socket.io-client";
 
+// Lấy cấu hình từ biến global hoặc mặc định
+const SOCKET_HOST = window.CHAT_CONFIG_HOST || "flexbiz.nodejs.tk";
+
 // Khởi tạo trực tiếp client
-const socket = io("flexbiz.nodejs.tk", {
+const socket = io(`${SOCKET_HOST}`, {
     transports: ["websocket", "polling"],
     withCredentials: false,
 });
 
 window.io = io;
-// Tạo socket client toàn cục
-window.socket = io("flexbiz.nodejs.tk", {
-    transports: ["websocket", "polling"],
-});
 
 // Nếu muốn dùng Laravel Echo:
 window.Echo = new Echo({
     broadcaster: "socket.io",
     client: io,
-    host: "flexbiz.nodejs.tk",
+    host: `${SOCKET_HOST}`,
+});
+
+// Tạo socket client toàn cục
+window.socket = io(`${SOCKET_HOST}`, {
+    transports: ["websocket", "polling"],
 });
 
 
@@ -31,4 +35,4 @@ socket.on("disconnect", () => {
 });
 
 
-// xem log nodejs: pm2 monit 
+// xem log nodejs: pm2 monit
