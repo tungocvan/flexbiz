@@ -27,9 +27,9 @@ class ChatService
             // Trong Modules/Admin/Services/ChatService.php
             $this->broadcastToNodeJS([
                 'channel' => 'chat',
-                'event'   => 'MessageSent',
+                'event'   => 'MessageSent', // Đây là biến {event} trong NodeJS
                 'data'    => [
-                    'session_id' => $data['session_id'], // BẮT BUỘC CÓ
+                    'session_id' => $data['session_id'],
                     'message'    => $message->message,
                     'sender_type'=> $message->sender_type
                 ]

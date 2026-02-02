@@ -38,7 +38,7 @@
 
             <div class="flex-1 p-6 overflow-y-auto space-y-4 bg-gray-50/30 custom-scrollbar" id="chat-window">
                 @foreach($activeSession->messages as $msg)
-                    <div wire:key="msg-{{ $msg->id }}" class="flex {{ $msg->sender_type == 'admin' ? 'justify-end' : 'justify-start' }}">
+                    <div wire:key="msg-{{ $msg->id }}-{{ time() }}" class="flex {{ $msg->sender_type == 'admin' ? 'justify-end' : 'justify-start' }}">
                         <div class="max-w-[75%] p-3.5 rounded-2xl shadow-sm text-sm leading-relaxed
                             {{ $msg->sender_type == 'admin'
                                 ? 'bg-blue-600 text-white rounded-tr-none'
@@ -68,3 +68,53 @@
         @endif
     </div>
 </div>
+@push('scripts')
+<script>
+    document.addEventListener('livewire:initialized', () => {
+        const chatWindow = document.getElementById('chat-window');
+
+        // Hàm cuộn mượt xuống cuối danh sách tin nhắn
+        const scrollToBottom = () => {
+            if (chatWindow) {
+                chatWindow.scrollTo({
+                    top: chatWindow.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }
+        };
+
+        // 1. Lắng nghe mọi sự kiện từ Socket qua onAny (Giải pháp cưỡng bức)
+        window.Echo.connector.socket.onAny((eventName, data) => {
+            // Chỉ xử lý nếu sự kiện liên quan đến MessageSent
+            if (eventName.includes('MessageSent')) {
+                console.log(`📡 Admin bắt được tín hiệu: ${eventName}`, data);
+
+                // Đợi 300ms để chắc chắn Database phía Laravel đã Commit xong
+                setTimeout(() => {
+                    // Gọi refresh-chat đã khai báo trong listeners của ChatManager.php
+                    Livewire.dispatch('refresh-chat');
+                    console.log('🔄 Admin UI đã được cập nhật dữ liệu mới');
+                }, 300);
+
+                // Cuộn xuống sau khi Livewire render xong HTML mới
+                setTimeout(scrollToBottom, 500);
+            }
+        });
+
+        // 2. Lắng nghe sự kiện từ Livewire nội bộ (Khi Admin bấm nút Gửi)
+        // Trong hàm send() của PHP, dùng $this->dispatch('scroll-chat-to-bottom')
+        window.addEventListener('scroll-chat-to-bottom', () => {
+            setTimeout(scrollToBottom, 100);
+        });
+
+        // 3. Tự động cuộn khi Admin chọn một Session khác từ Sidebar
+        // Giả sử trong hàm selectSession() có dispatch event 'session-selected'
+        window.addEventListener('session-selected', () => {
+            setTimeout(scrollToBottom, 200);
+        });
+
+        // Khởi tạo cuộn lần đầu khi trang load
+        setTimeout(scrollToBottom, 500);
+    });
+</script>
+@endpush

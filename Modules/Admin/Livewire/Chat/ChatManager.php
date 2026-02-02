@@ -13,10 +13,13 @@ class ChatManager extends Component
     public $message = '';
 
     // Lắng nghe sự kiện từ Echo (NodeJS) và sự kiện nội bộ
-    protected $listeners = [
-        'echo:chat,.MessageSent' => 'refreshChat',
-        'refresh-chat' => '$refresh'
-    ];
+    public function getListeners()
+    {
+        return [
+            "echo:chat,.MessageSent" => 'refreshChat', // Dấu chấm (.) là bắt buộc
+            "refresh-chat" => '$refresh',
+        ];
+    }
 
     public function selectSession($id)
     {
@@ -31,15 +34,9 @@ class ChatManager extends Component
         $this->dispatch('scroll-chat-to-bottom');
     }
 
-    public function refreshChat($data)
-    {
-        // Log ra console để chắc chắn hàm này đã chạy
-        $this->dispatch('log-to-console', message: 'Admin received socket data!');
-        // Cập nhật lại danh sách session và tin nhắn mà không cần reload
-        $this->dispatch('refresh-chat');
-
-        // Phát sự kiện cuộn xuống cho Javascript ở Blade Page
-        $this->dispatch('scroll-chat-to-bottom');
+    public function refreshChat($data) {
+        // Logic lọc hoặc xử lý nếu cần
+        $this->dispatch('refresh-chat'); // Nó sẽ kích hoạt listener "$refresh" ở trên
     }
 
     public function send(ChatService $chatService)

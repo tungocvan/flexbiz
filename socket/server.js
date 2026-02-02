@@ -48,8 +48,6 @@ io.on("connection", (socket) => {
 app.post("/broadcast", (req, res) => {
     const { channel, event, data } = req.body;
 
-    // Gửi thẳng event 'MessageSent' vào channel 'chat'
-    // Echo phía Laravel đang nghe channel('chat').listen('.MessageSent')
     io.emit(event, data);
 
     res.json({ ok: true });

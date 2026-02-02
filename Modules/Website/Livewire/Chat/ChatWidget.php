@@ -14,16 +14,27 @@ class ChatWidget extends Component
     public $sessionToken;
     public $guestInfo = ['name' => '', 'phone' => '', 'email' => ''];
 
-    protected $listeners = [
-        'echo:chat,.MessageSent' => 'handleIncoming'
-    ];
+    public function getListeners()
+    {
+        return [
+            // Lắng nghe từ Echo (NodeJS)
+            "echo:chat,.MessageSent" => 'handleIncoming',
+            // Lắng nghe lệnh refresh từ Javascript nội bộ
+            '$refresh' => '$refresh',
+            'refresh-widget' => '$refresh'
+        ];
+    }
 
     public function handleIncoming($data)
     {
-        // Refresh giao diện người dùng
-        $this->dispatch('$refresh');
-        // Cuộn xuống cuối
-        $this->dispatch('scroll-bottom');
+        // Lấy session hiện tại dựa trên token của khách
+        $session = ChatSession::where('session_token', $this->sessionToken)->first();
+
+        // CHỈ REFRESH NẾU: Tin nhắn bay về thuộc đúng ID của phiên chat này
+        if ($session && isset($data['session_id']) && $data['session_id'] == $session->id) {
+            $this->dispatch('$refresh');
+            $this->dispatch('scroll-bottom');
+        }
     }
 
     public function mount()
@@ -66,6 +77,17 @@ class ChatWidget extends Component
 
     public function render()
     {
-        return view('Website::livewire.chat.chat-widget');
+        $messages = [];
+        if ($this->step === 'chat') {
+            $session = \Modules\Admin\Models\ChatSession::where('session_token', $this->sessionToken)
+                ->with(['messages' => fn($q) => $q->orderBy('created_at', 'asc')])
+                ->first();
+
+            $messages = $session ? $session->messages : [];
+        }
+
+        return view('Website::livewire.chat.chat-widget', [
+            'messages' => $messages
+        ]);
     }
 }
