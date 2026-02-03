@@ -78,4 +78,54 @@ class ChatService
             Log::error("Realtime Bridge Failure: " . $e->getMessage());
         }
     }
+
+    public function deleteMessage($messageId): bool
+    {
+        return DB::transaction(function () use ($messageId) {
+            $message = ChatMessage::find($messageId);
+            if (!$message) return false;
+
+            $sessionId = $message->chat_session_id;
+            $message->delete(); // Xóa hẳn khỏi DB theo yêu cầu
+
+            // Thông báo cho các bên để xóa tin nhắn trên UI
+            $this->broadcastToNodeJS([
+                'channel' => 'chat',
+                'event'   => 'MessageDeleted',
+                'data'    => [
+                    'message_id' => $messageId,
+                    'session_id' => $sessionId
+                ]
+            ]);
+
+            return true;
+        });
+    }
+    /**
+ * Xóa sạch toàn bộ tin nhắn trong một phiên chat
+ */
+public function deleteAllMessages($sessionId): bool
+{
+    try {
+        return \DB::transaction(function () use ($sessionId) {
+            // 1. Xóa tất cả tin nhắn thuộc session_id này trong Database
+            \Modules\Admin\Models\ChatMessage::where('chat_session_id', $sessionId)->delete();
+
+            // 2. Bắn tín hiệu Realtime sang NodeJS để Client cập nhật UI ngay lập tức
+            $this->broadcastToNodeJS([
+                'channel' => 'chat',
+                'event'   => 'AllMessagesDeleted',
+                'data'    => [
+                    'session_id' => $sessionId
+                ]
+            ]);
+
+            return true;
+        });
+    } catch (\Exception $e) {
+        \Log::error("❌ Lỗi xóa tin nhắn session {$sessionId}: " . $e->getMessage());
+        return false;
+    }
+}
+
 }

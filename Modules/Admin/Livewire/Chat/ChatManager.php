@@ -21,6 +21,7 @@ class ChatManager extends Component
             // Lắng nghe từ Channel 'chat' (phát ra từ NodeJS)
             "echo:chat,MessageSent" => 'handleIncomingMessage',
             "refresh-chat" => '$refresh',
+            'refresh-widget' => '$refresh'
         ];
     }
 
@@ -79,5 +80,18 @@ class ChatManager extends Component
                     ->find($this->activeSessionId)
                 : null,
         ]);
+    }
+    public function delete($id, ChatService $service)
+    {
+        $service->deleteMessage($id);
+        $this->dispatch('refresh-chat');
+    }
+    public function clearSessionMessages($sessionId, ChatService $service)
+    {
+        $service->deleteAllMessages($sessionId);
+
+        if ($this->activeSessionId == $sessionId) {
+            $this->dispatch('refresh-chat'); // Làm mới vùng chat hiện tại của Admin
+        }
     }
 }

@@ -21,11 +21,15 @@ use Modules\Admin\Http\Controllers\HeaderController;
 use Modules\Admin\Http\Controllers\FooterController;
 use Modules\Admin\Http\Controllers\ProductCommissionController;
 use Modules\Admin\Http\Controllers\ChatController;
+use Modules\Admin\Http\Controllers\Auth\GoogleController;
 
 Route::middleware(['web'])->group(function () {
 
     // Auth Routes (Placeholder)
     Route::get('/admin/login', [AuthController::class, 'login'])->name('admin.login');
+    Route::get('/auth/google', [GoogleController::class, 'redirectToGoogle'])->name('google');
+    Route::get('/auth/google/callback', [GoogleController::class, 'handleGoogleCallback'])->name('google.callback');
+
 
     // Protected Routes
     Route::middleware(['web','auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau

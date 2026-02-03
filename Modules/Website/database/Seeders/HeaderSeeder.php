@@ -83,7 +83,7 @@ class HeaderSeeder extends Seeder
         $categories = ['Điện Thoại & Tablet', 'Laptop & Đồ Họa', 'Thời Trang Nam'];
         foreach ($categories as $index => $cat) {
             HeaderMenuItem::create([
-                'header_menu_id' => $menuId, 
+                'header_menu_id' => $menuId,
                 'parent_id' => $productParent->id,
                 'title' => $cat,
                 'url' => '/shop?category=' . Str::slug($cat),
@@ -110,7 +110,7 @@ class HeaderSeeder extends Seeder
         HeaderMenuItem::create([
             'header_menu_id' => $menuId,
             'title' => 'Hồ sơ cá nhân',
-            'url' => '#', // Thay bằng route thực tế nếu có, ví dụ: route('admin.profile')
+            'url' => '/admin/profile', // Thay bằng route thực tế nếu có, ví dụ: route('admin.profile')
             'sort_order' => 1,
             'is_active' => true
         ]);
@@ -118,7 +118,7 @@ class HeaderSeeder extends Seeder
         HeaderMenuItem::create([
             'header_menu_id' => $menuId,
             'title' => 'Cài đặt',
-            'url' => '#', // Thay bằng route thực tế nếu có
+            'url' => '/admin/settings', // Thay bằng route thực tế nếu có
             'sort_order' => 2,
             'is_active' => true
         ]);

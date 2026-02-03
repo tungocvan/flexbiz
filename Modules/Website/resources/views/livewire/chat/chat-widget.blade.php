@@ -61,16 +61,37 @@
         scroll();
 
         window.Echo.connector.socket.onAny((eventName, data) => {
-        if (eventName === 'MessageSent') {
-            console.log("📡 Widget nhận tín hiệu, đang làm mới UI...");
+            if (eventName === 'MessageSent') {
+                console.log("📡 Widget nhận tín hiệu, đang làm mới UI...");
 
-            // 'refresh-widget' là listener đã khai báo trong ChatWidget.php
-            Livewire.dispatch('refresh-widget');
+                // 'refresh-widget' là listener đã khai báo trong ChatWidget.php
+                Livewire.dispatch('refresh-widget');
 
-            setTimeout(() => {
-                if(chatContent) chatContent.scrollTop = chatContent.scrollHeight;
-            }, 300);
-        }
+                setTimeout(() => {
+                    if(chatContent) chatContent.scrollTop = chatContent.scrollHeight;
+                }, 300);
+            }
+            // Trường hợp 2: Có tin nhắn bị xóa (Cần bổ sung)
+            if (eventName === 'MessageDeleted') {
+                console.log("🗑️ Phát hiện tin nhắn bị xóa, đang cập nhật UI...");
+
+                // Ép Livewire gọi lại hàm render() để lấy danh sách tin nhắn mới từ DB
+                Livewire.dispatch('refresh-chat');
+
+                // Hoặc nếu muốn mượt hơn, bạn có thể dùng JS xóa trực tiếp phần tử DOM
+                // const el = document.querySelector(`[wire\\:key="msg-${data.message_id}"]`);
+                // if(el) el.remove();
+            }
+            // Nếu nhận được lệnh xóa tất cả
+            if (eventName === 'AllMessagesDeleted') {
+                console.log("⚠️ Toàn bộ tin nhắn đã bị xóa bởi quản trị viên.");
+
+                // Ép Livewire làm mới (lúc này DB đã trống, UI sẽ sạch tin nhắn)
+                Livewire.dispatch('refresh-widget');
+
+                // Hoặc có thể dùng JS để xóa nhanh DOM nếu không muốn đợi Livewire
+                // document.getElementById('chat-content').innerHTML = '';
+            }
     });
     });
 </script>

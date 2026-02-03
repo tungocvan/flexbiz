@@ -17,12 +17,13 @@ class User extends Authenticatable
     use HasApiTokens, HasFactory, Notifiable, SoftDeletes,HasRoles;
    // protected $guard_name = 'auth:admin';
     protected $fillable = [
-        'name', 'email', 'password', 
+        'name', 'email', 'password',
+        'google_id', 'google_token', 'google_refresh_token',
         'phone', 'avatar', 'is_active', 'last_login_at'
     ];
 
     protected $hidden = [
-        'password', 'remember_token',
+        'password', 'remember_token', 'google_token', 'google_refresh_token'
     ];
 
     protected $casts = [

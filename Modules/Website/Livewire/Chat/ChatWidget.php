@@ -19,7 +19,8 @@ class ChatWidget extends Component
         return [
             // Lắng nghe tin nhắn mới từ Echo
             "echo:chat,MessageSent" => 'handleIncoming',
-            'refresh-widget' => '$refresh'
+            'refresh-widget' => '$refresh',
+            'refresh-chat' => '$refresh'
         ];
     }
 
