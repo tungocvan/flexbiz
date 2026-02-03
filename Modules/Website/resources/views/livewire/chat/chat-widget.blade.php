@@ -1,139 +1,77 @@
-<div x-data="{ open: @entangle('isOpen') }" class="fixed bottom-24 right-8 z-[9999]">
-    <button @click="open = !open; if(open) $dispatch('chat-opened')"
-        class="group relative flex h-16 w-16 items-center justify-center rounded-full bg-blue-600 shadow-[0_10px_25px_rgba(37,99,235,0.4)] transition-all duration-300 hover:bg-blue-700 hover:scale-110 active:scale-95 focus:outline-none">
-        <span class="absolute -top-1 -right-1 flex h-5 w-5">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-5 w-5 bg-green-500 border-4 border-white"></span>
-        </span>
-        <svg x-show="!open" class="h-8 w-8 text-white transition-transform group-hover:rotate-12" fill="none"
-            stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
-            </path>
+<div x-data="{ open: @entangle('isOpen') }" class="fixed bottom-6 right-6 z-[9999]">
+    <button @click="open = !open"
+        class="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 shadow-lg hover:scale-110 transition-transform text-white">
+        <svg x-show="!open" class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
         </svg>
-        <svg x-show="open" x-cloak class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg x-show="open" x-cloak class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
     </button>
 
-    <div x-show="open" x-cloak x-transition:enter="transition ease-out duration-300 transform"
-        x-transition:enter-start="opacity-0 translate-y-12 scale-95"
-        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-        x-transition:leave="transition ease-in duration-200 transform"
-        class="absolute bottom-20 right-0 w-[380px] sm:w-[420px] max-h-[600px] overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-[0_20px_60px_rgba(0,0,0,0.2)] flex flex-col">
+    <div x-show="open" x-cloak
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 translate-y-4"
+        class="absolute bottom-20 right-0 w-80 sm:w-96 h-[500px] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden">
 
-        <div class="bg-gradient-to-r from-blue-600 to-blue-700 p-5 text-white">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=fff&color=2563eb"
-                        class="h-12 w-12 rounded-2xl border-2 border-white/20 shadow-md">
-                    <div>
-                        <h3 class="text-base font-bold tracking-tight">Hỗ trợ trực tuyến</h3>
-                        <p class="text-[11px] font-medium text-blue-100">Sẵn sàng hỗ trợ bạn</p>
-                    </div>
-                </div>
-            </div>
+        <div class="bg-blue-600 p-4 text-white flex items-center gap-3">
+            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <h3 class="font-bold text-sm">Hỗ trợ trực tuyến</h3>
         </div>
 
         @if ($step == 'auth')
-            <div class="p-8 bg-white">
+            <div class="flex-1 flex flex-col items-center justify-center p-6 text-center">
+                <p class="text-gray-500 text-sm mb-4">Chào bạn! Chúng tôi có thể giúp gì cho bạn?</p>
                 <button wire:click="startChat"
-                    class="w-full rounded-2xl bg-blue-600 py-4 font-bold text-white shadow-xl shadow-blue-500/20 hover:bg-blue-700 transition-all">Bắt
-                    đầu trò chuyện</button>
+                    class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-blue-700 transition-all">
+                    Bắt đầu Chat ngay
+                </button>
             </div>
         @else
-            <div class="flex h-[450px] flex-col bg-gray-50/50">
-                <div id="chat-content" class="flex-1 overflow-y-auto p-5 space-y-6 custom-scrollbar">
-                    {{-- Loop tin nhắn realtime --}}
-                    @php
-                        $session = \Modules\Admin\Models\ChatSession::where('session_token', $sessionToken)->first();
-                        $messages = $session ? $session->messages : [];
-                    @endphp
-
-                    @foreach ($messages as $msg)
-                        <div wire:key="msg-{{ $msg->id }}-{{ time() }}"
-                            class="flex {{ $msg->sender_type == (Auth::check() ? 'user' : 'guest') ? 'justify-end' : 'justify-start' }} items-end gap-2">
-                            <div
-                                class="max-w-[85%] p-4 text-sm leading-relaxed shadow-sm
-                                {{ $msg->sender_type == (Auth::check() ? 'user' : 'guest')
-                                    ? 'bg-blue-600 text-white rounded-2xl rounded-tr-none'
-                                    : 'bg-white text-gray-700 rounded-2xl rounded-tl-none border border-gray-100' }}">
-                                {{ $msg->message }}
-                            </div>
+            <div id="chat-content" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 custom-scrollbar">
+                @foreach ($messages as $msg)
+                    <div wire:key="msg-{{ $msg->id }}" class="flex {{ $msg->sender_type != 'admin' ? 'justify-end' : 'justify-start' }}">
+                        <div class="max-w-[85%] p-3 rounded-2xl text-sm shadow-sm
+                            {{ $msg->sender_type != 'admin' ? 'bg-blue-600 text-white rounded-br-none' : 'bg-white text-gray-700 border border-gray-100 rounded-bl-none' }}">
+                            {{ $msg->message }}
                         </div>
-                    @endforeach
-                </div>
+                    </div>
+                @endforeach
+            </div>
 
-                <div class="p-4 bg-white border-t border-gray-100">
-                    <form wire:submit.prevent="send" class="relative flex items-center group">
-                        <input wire:model="message" type="text"
-                            class="w-full rounded-2xl border-none bg-gray-100 py-4 pl-5 pr-14 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 transition-all outline-none"
-                            placeholder="Viết tin nhắn...">
-                        <button type="submit"
-                            class="absolute right-2 h-10 w-10 flex items-center justify-center bg-blue-600 text-white rounded-xl shadow-lg hover:bg-blue-700">
-                            <svg class="h-5 w-5 rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
-                                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
-                            </svg>
-                        </button>
-                    </form>
-                </div>
+            <div class="p-3 bg-white border-t border-gray-100">
+                <form wire:submit.prevent="send" class="flex gap-2">
+                    <input wire:model="message" type="text" placeholder="Nhập tin nhắn..."
+                        class="flex-1 bg-gray-100 border-none rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500">
+                    <button type="submit" class="text-blue-600 hover:scale-110 transition-transform">
+                        <svg class="w-6 h-6 rotate-90" fill="currentColor" viewBox="0 0 20 20"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z"></path></svg>
+                    </button>
+                </form>
             </div>
         @endif
     </div>
 </div>
 
-@push('styles')
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 5px;
-        }
-
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 20px;
-        }
-    </style>
-@endpush
-
 @push('scripts')
 <script>
     document.addEventListener('livewire:initialized', () => {
         const chatContent = document.getElementById('chat-content');
+        const scroll = () => { if(chatContent) chatContent.scrollTop = chatContent.scrollHeight; };
+        window.addEventListener('scroll-bottom', () => setTimeout(scroll, 50));
+        scroll();
 
-        const scrollToBottom = () => {
-            if (chatContent) {
-                chatContent.scrollTo({ top: chatContent.scrollHeight, behavior: 'smooth' });
-            }
-        };
-
-        // Lắng nghe mọi sự kiện từ Socket (Cưỡng bức Realtime)
         window.Echo.connector.socket.onAny((eventName, data) => {
-            if (eventName.includes('MessageSent')) {
-                // Kiểm tra nếu tin nhắn gửi về khớp với ID session của widget này
-                // @this.sessionToken lấy giá trị trực tiếp từ Livewire Component
-                console.log('📡 Widget nhận tín hiệu:', eventName);
+        if (eventName === 'MessageSent') {
+            console.log("📡 Widget nhận tín hiệu, đang làm mới UI...");
 
-                setTimeout(() => {
-                    // Gọi lệnh refresh
-                    Livewire.dispatch('refresh-widget');
-                }, 250);
+            // 'refresh-widget' là listener đã khai báo trong ChatWidget.php
+            Livewire.dispatch('refresh-widget');
 
-                setTimeout(scrollToBottom, 500);
-            }
-        });
-
-        // Lắng nghe cuộn khi khách gửi tin
-        window.addEventListener('scroll-bottom', scrollToBottom);
-
-        // Cuộn khi mở widget
-        window.addEventListener('chat-opened', () => {
-            setTimeout(scrollToBottom, 300);
-        });
+            setTimeout(() => {
+                if(chatContent) chatContent.scrollTop = chatContent.scrollHeight;
+            }, 300);
+        }
+    });
     });
 </script>
 @endpush

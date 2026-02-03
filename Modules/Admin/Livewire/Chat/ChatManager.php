@@ -12,20 +12,37 @@ class ChatManager extends Component
     public $activeSessionId = null;
     public $message = '';
 
-    // Lắng nghe sự kiện từ Echo (NodeJS) và sự kiện nội bộ
+    /**
+     * Lắng nghe sự kiện Realtime từ Echo
+     */
     public function getListeners()
     {
         return [
-            "echo:chat,.MessageSent" => 'refreshChat', // Dấu chấm (.) là bắt buộc
+            // Lắng nghe từ Channel 'chat' (phát ra từ NodeJS)
+            "echo:chat,MessageSent" => 'handleIncomingMessage',
             "refresh-chat" => '$refresh',
         ];
+    }
+
+    /**
+     * Xử lý khi có tin nhắn mới bay về
+     */
+    public function handleIncomingMessage($data)
+    {
+        // Tự động refresh UI để hiển thị tin nhắn mới hoặc cập nhật Sidebar
+        $this->dispatch('refresh-chat');
+
+        // Nếu tin nhắn thuộc session đang mở, yêu cầu cuộn xuống cuối
+        if (isset($data['session_id']) && $data['session_id'] == $this->activeSessionId) {
+            $this->dispatch('scroll-chat-to-bottom');
+        }
     }
 
     public function selectSession($id)
     {
         $this->activeSessionId = $id;
 
-        // Gán Admin tiếp nhận nếu chưa có
+        // Gán Admin tiếp nhận phiên chat nếu chưa có ai trực
         $session = ChatSession::find($id);
         if ($session && !$session->admin_id) {
             $session->update(['admin_id' => Auth::id()]);
@@ -34,16 +51,11 @@ class ChatManager extends Component
         $this->dispatch('scroll-chat-to-bottom');
     }
 
-    public function refreshChat($data) {
-        // Logic lọc hoặc xử lý nếu cần
-        $this->dispatch('refresh-chat'); // Nó sẽ kích hoạt listener "$refresh" ở trên
-    }
-
     public function send(ChatService $chatService)
     {
         if (!$this->activeSessionId || empty(trim($this->message))) return;
 
-        // Gọi Service xử lý nghiệp vụ lưu và bắn Socket
+        // Gọi Service xử lý (Lưu DB + Bridge sang NodeJS)
         $chatService->sendMessage([
             'session_id'  => $this->activeSessionId,
             'sender_id'    => Auth::id(),
@@ -58,9 +70,9 @@ class ChatManager extends Component
     public function render()
     {
         return view('Admin::livewire.chat.chat-manager', [
-            'sessions' => ChatSession::with('user')
-                ->orderBy('updated_at', 'desc')
-                ->limit(20)
+            'sessions' => ChatSession::with(['user', 'latestMessage'])
+                ->orderBy('last_message_at', 'desc') // Sắp xếp theo tương tác mới nhất
+                ->limit(30)
                 ->get(),
             'activeSession' => $this->activeSessionId
                 ? ChatSession::with(['messages' => fn($q) => $q->orderBy('created_at', 'asc')])

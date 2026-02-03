@@ -1,39 +1,46 @@
-require('dotenv').config(); // Load biến môi trường từ file .env
-const cors = require('cors')
+require('dotenv').config();
+const cors = require('cors');
 const express = require("express");
-const app = express();
 const { createServer } = require("http");
 const { Server } = require("socket.io");
-const fs = require("fs");
-const path = require("path");
 
-// Middleware - Phải đặt trước các route
-
-app.use(cors()); // Cho phép mọi domain hoặc cấu hình cụ thể trong .env
+const app = express();
+app.use(cors());
 app.use(express.json());
+
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
     cors: {
-        origin: "*", // Production nên thay bằng domain Laravel
+        origin: process.env.APP_URL || "*", // Chỉ định domain Laravel để bảo mật
         methods: ["GET", "POST"],
     }
 });
 
-// Cơ chế Auto-load Custom Events (Mở rộng không cần sửa file gốc)
-const eventsPath = path.join(__dirname, "events");
-if (fs.existsSync(eventsPath)) {
-    fs.readdirSync(eventsPath).forEach(file => {
-        if (file.endsWith(".js")) {
-            require(`./events/${file}`)(io);
-        }
-    });
-}
+/**
+ * Middleware: Bảo mật kênh truyền từ Laravel
+ */
+const bridgeAuth = (req, res, next) => {
+    const secret = req.headers['x-bridge-secret'];
+    if (secret !== process.env.BRIDGE_SECRET_KEY) {
+        return res.status(401).json({ error: 'Unauthorized bridge request' });
+    }
+    next();
+};
 
-// Socket Connection Logic
+// Route nhận tin nhắn từ Laravel Bridge (Đã thêm Auth)
+app.post("/broadcast", bridgeAuth, (req, res) => {
+    const { channel, event, data } = req.body;
+
+    // Phát tín hiệu tới đúng channel hoặc broadcast toàn cục
+    // Ở bản này, chúng ta dùng emit đơn giản, có thể mở rộng sang rooms
+    io.emit(event, data);
+
+    res.json({ ok: true });
+});
+
 io.on("connection", (socket) => {
     console.log("🔌 Client connected:", socket.id);
 
-    // Join room để chat riêng biệt
     socket.on("join", (room) => {
         socket.join(room);
         console.log(`👤 Socket ${socket.id} joined room: ${room}`);
@@ -44,18 +51,7 @@ io.on("connection", (socket) => {
     });
 });
 
-// Route nhận tin nhắn từ Laravel Bridge
-app.post("/broadcast", (req, res) => {
-    const { channel, event, data } = req.body;
-
-    io.emit(event, data);
-
-    res.json({ ok: true });
-});
-
-app.get("/", (req, res) => res.send("Socket server is running..."));
-
 const PORT = process.env.PORT || 6002;
 httpServer.listen(PORT, "0.0.0.0", () => {
-    console.log(`🚀 Server running at http://0.0.0.0:${PORT}`);
+    console.log(`🚀 Realtime Server running at port ${PORT}`);
 });

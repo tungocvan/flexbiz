@@ -1,37 +1,44 @@
 <?php
-
 namespace Modules\Admin\Services;
 
 use Modules\Admin\Models\ChatSession;
 use Modules\Admin\Models\ChatMessage;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ChatService
 {
     /**
-     * Gửi tin nhắn và bắn tín hiệu sang NodeJS
+     * Gửi tin nhắn và đồng bộ sang NodeJS Realtime
      */
-    public function sendMessage(array $data)
+    public function sendMessage(array $data): ChatMessage
     {
         return DB::transaction(function () use ($data) {
+            // 1. Lưu tin nhắn
             $message = ChatMessage::create([
                 'chat_session_id' => $data['session_id'],
-                // Nếu là guest thì ép kiểu về null để tránh lỗi SQL
-                'sender_id'       => $data['sender_type'] === 'guest' ? null : $data['sender_id'],
+                'sender_id'       => in_array($data['sender_type'], ['user', 'admin']) ? $data['sender_id'] : null,
                 'sender_type'     => $data['sender_type'],
                 'message'         => $data['message'],
+                'metadata'        => $data['metadata'] ?? null,
             ]);
 
-            // Bridge sang NodeJS (giữ nguyên)
-            // Trong Modules/Admin/Services/ChatService.php
+            // 2. Cập nhật thời gian tương tác cuối cùng của Session để sort sidebar
+            $message->session()->update([
+                'last_message_at' => now(),
+                'status' => 'open'
+            ]);
+
+            // 3. Bridge sang NodeJS Server với Security Header
             $this->broadcastToNodeJS([
                 'channel' => 'chat',
-                'event'   => 'MessageSent', // Đây là biến {event} trong NodeJS
+                'event'   => 'MessageSent',
                 'data'    => [
-                    'session_id' => $data['session_id'],
-                    'message'    => $message->message,
-                    'sender_type'=> $message->sender_type
+                    'session_id'  => $data['session_id'],
+                    'message'     => $message->message,
+                    'sender_type' => $message->sender_type,
+                    'created_at'  => $message->created_at->format('H:i'),
                 ]
             ]);
 
@@ -40,27 +47,35 @@ class ChatService
     }
 
     /**
-     * Tìm hoặc tạo Session cho Guest
+     * Khởi tạo hoặc tìm phiên chat (Dành cho Guest/User)
      */
-    public function getOrCreateGuestSession($token)
+    public function getOrCreateSession(string $token, array $guestData = []): ChatSession
     {
         return ChatSession::firstOrCreate(
             ['session_token' => $token],
-            ['status' => 'open']
+            array_merge([
+                'status' => 'open',
+                'last_message_at' => now(),
+            ], $guestData)
         );
     }
 
     /**
-     * Bridge: Gửi HTTP Request sang NodeJS Server
+     * HTTP Bridge: Gửi dữ liệu sang NodeJS Socket Server
      */
-    protected function broadcastToNodeJS(array $payload)
+    protected function broadcastToNodeJS(array $payload): void
     {
         try {
-            $url = config('services.nodejs.url', env('NODEJS_SERVER_URL')) . '/broadcast';
-            Http::timeout(3)->post($url, $payload);
+            $url = config('services.nodejs.url', env('NODEJS_SERVER_URL', 'http://localhost:6002')) . '/broadcast';
+
+            Http::withHeaders([
+                'X-Bridge-Secret' => env('BRIDGE_SECRET_KEY', 'default_secret'), // Bảo mật kênh truyền
+            ])
+            ->timeout(2)
+            ->post($url, $payload);
+
         } catch (\Exception $e) {
-            // Ghi log nếu NodeJS server die, nhưng không làm chết luồng Laravel
-            \Log::error("Socket Bridge Error: " . $e->getMessage());
+            Log::error("Realtime Bridge Failure: " . $e->getMessage());
         }
     }
 }

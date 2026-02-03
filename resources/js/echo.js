@@ -1,39 +1,32 @@
 import Echo from "laravel-echo";
 import { io } from "socket.io-client";
 
-// Lấy cấu hình từ biến global hoặc mặc định
-const SOCKET_HOST = window.CHAT_CONFIG_HOST || "node.tungocvan.com";
-
-// Khởi tạo trực tiếp client
-const socket = io(`${SOCKET_HOST}`, {
-    transports: ["websocket", "polling"],
-    withCredentials: false,
-});
+// Lấy cấu hình từ Window Object (được set trong master layout)
+const SOCKET_HOST = window.CHAT_CONFIG_HOST || window.location.hostname + ":6002";
 
 window.io = io;
 
-// Nếu muốn dùng Laravel Echo:
+/**
+ * Khởi tạo Laravel Echo với Driver Socket.io
+ */
 window.Echo = new Echo({
     broadcaster: "socket.io",
     client: io,
-    host: `${SOCKET_HOST}`,
-});
-
-// Tạo socket client toàn cục
-window.socket = io(`${SOCKET_HOST}`, {
+    host: SOCKET_HOST,
     transports: ["websocket", "polling"],
+    withCredentials: false
 });
 
-
-
-socket.on("connect", () => {
-    console.log("✅ Socket.IO connected (echo.js):", socket.id);
-    console.log("✅SOCKET_HOST: ", SOCKET_HOST );
+// Log trạng thái phục vụ debug
+window.Echo.connector.socket.on("connect", () => {
+    console.log("✅ SOCKET_HOST: ", SOCKET_HOST);
+    console.log("✅ Chat Realtime Connected. ID:", window.Echo.connector.socket.id);
 });
 
-socket.on("disconnect", () => {
-    console.log("❌ Socket.IO disconnected (echo.js)");
+window.Echo.connector.socket.on("connect_error", (error) => {
+    console.error("❌ Chat Connection Error:", error);
 });
 
-
-// xem log nodejs: pm2 monit
+window.Echo.connector.socket.onAny((eventName, data) => {
+    console.log("🔔 Tín hiệu thô nhận được từ Socket:", eventName, data);
+});

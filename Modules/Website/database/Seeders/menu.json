@@ -73,6 +73,14 @@
         "children": []
     },
     {
+        "name": "Quản lý Chat",
+        "url": "\/admin\/chat",
+        "icon": "users",
+        "can": "view_customer",
+        "is_active": true,
+        "children": []
+    },
+    {
         "name": "MARKETING & NỘI DUNG",
         "url": null,
         "icon": null,
