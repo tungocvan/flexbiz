@@ -11,6 +11,17 @@ class EnvManagerService
     {
         $this->envPath = base_path('.env'); //
     }
+    public function exportToEnvironment(string $suffix): bool
+    {
+        $targetPath = base_path(".env.{$suffix}");
+      
+        // Copy file .env hiện tại sang file đích
+        if (File::exists($this->envPath)) {
+            return File::copy($this->envPath, $targetPath);
+        }
+        
+        return false;
+    }
     public function getValues(): array
     {
         if (!File::exists($this->envPath)) {

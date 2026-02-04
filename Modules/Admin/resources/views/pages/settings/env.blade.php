@@ -1,5 +1,5 @@
 @extends('Admin::layouts.master')
-
+@section('title', 'Cấu hình Hệ thống')
 @section('content')
 <div class="container mx-auto px-4 py-6" x-data="{ activeTab: 'database', tabs: @js($tabs) }">
     {{-- Breadcrumb --}}
@@ -9,9 +9,21 @@
         <span class="text-gray-800 font-bold uppercase tracking-tighter">Cấu hình hệ thống</span>
     </nav>
 
-    <div class="mb-8">
-        <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tight">Quản trị Môi trường (.env)</h1>
-        <p class="text-gray-500 text-sm">Hệ thống quản lý tham số vận hành chuẩn <span class="text-red-600 font-bold underline">Production</span>.</p>
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+        <div>
+            <h1 class="text-2xl font-black text-gray-900 uppercase tracking-tight flex items-center gap-2">
+                <span class="w-2 h-8 bg-primary rounded-full"></span>
+                Quản trị Môi trường (.env)
+            </h1>
+            <p class="text-gray-500 text-sm mt-1">
+                Hệ thống quản lý tham số vận hành chuẩn 
+                <span class="px-2 py-0.5 bg-red-50 text-red-600 rounded font-bold border border-red-100">Production</span> 
+                & <span class="px-2 py-0.5 bg-blue-50 text-blue-600 rounded font-bold border border-blue-100">Local</span>
+            </p>
+        </div>
+    
+        @livewire('admin.settings.env-manager')
+       
     </div>
 
     {{-- Tabs Navigation --}}
