@@ -13,7 +13,7 @@
     <title>@yield('title','HOMEPAGE')</title>
     {!! Setting::getValue('header_script') !!}
     <script>
-        window.CHAT_CONFIG_HOST = "{{ env('CHAT_SOCKET_HOST', 'flexbiz.nodejs.tk') }}";
+        window.CHAT_CONFIG_HOST = "{{ env('NODEJS_SERVER_URL') }}";
         window.CHAT_CONFIG_PORT = "6002";
     </script>
     {{-- <script src="https://unpkg.com/@tailwindcss/browser@4"></script> --}}

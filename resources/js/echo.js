@@ -27,6 +27,6 @@ window.Echo.connector.socket.on("connect_error", (error) => {
     console.error("❌ Chat Connection Error:", error);
 });
 
-window.Echo.connector.socket.onAny((eventName, data) => {
-    console.log("🔔 Tín hiệu thô nhận được từ Socket:", eventName, data);
-});
+// window.Echo.connector.socket.onAny((eventName, data) => {
+//     console.log("🔔 Tín hiệu thô nhận được từ Socket:", eventName, data);
+// });

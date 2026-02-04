@@ -109,7 +109,7 @@ public function deleteAllMessages($sessionId): bool
     try {
         return \DB::transaction(function () use ($sessionId) {
             // 1. Xóa tất cả tin nhắn thuộc session_id này trong Database
-            \Modules\Admin\Models\ChatMessage::where('chat_session_id', $sessionId)->delete();
+            ChatMessage::where('chat_session_id', $sessionId)->delete();
 
             // 2. Bắn tín hiệu Realtime sang NodeJS để Client cập nhật UI ngay lập tức
             $this->broadcastToNodeJS([

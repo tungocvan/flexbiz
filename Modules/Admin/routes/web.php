@@ -22,6 +22,7 @@ use Modules\Admin\Http\Controllers\FooterController;
 use Modules\Admin\Http\Controllers\ProductCommissionController;
 use Modules\Admin\Http\Controllers\ChatController;
 use Modules\Admin\Http\Controllers\Auth\GoogleController;
+use Modules\Admin\Http\Controllers\EnvConfigController;
 
 Route::middleware(['web'])->group(function () {
 
@@ -34,6 +35,7 @@ Route::middleware(['web'])->group(function () {
     // Protected Routes
     Route::middleware(['web','auth:admin'])->prefix('admin')->name('admin.')->group(function () { // Sau này thêm middleware admin sau
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
         Route::get('/chat', [ChatController::class, 'index'])->name('chat.index');
         Route::get('/profile', [SettingController::class, 'profile'])->name('profile');
         Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -82,7 +84,7 @@ Route::middleware(['web'])->group(function () {
 
         // Thêm vào trong group prefix 'admin'
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
-
+        Route::get('/settings/env', [EnvConfigController::class, 'index'])->name('settings.env');
 
         Route::prefix('posts')->name('posts.')->group(function() {
             Route::get('/', [PostController::class, 'index'])->name('index');

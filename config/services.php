@@ -34,8 +34,8 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-    'socket' => [
-        'url' => env('SOCKET_IO_HOST', 'https://flexbiz.nodejs.tk'),
+    'nodejs' => [
+        'url' => env('NODEJS_SERVER_URL', 'https://flexbiz.nodejs.tk'),
     ],
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),

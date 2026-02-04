@@ -20,7 +20,9 @@ const io = new Server(httpServer, {
  * Middleware: Bảo mật kênh truyền từ Laravel
  */
 const bridgeAuth = (req, res, next) => {
+    console.log("🔌 process.env.BRIDGE_SECRET_KEY:", process.env.BRIDGE_SECRET_KEY);
     const secret = req.headers['x-bridge-secret'];
+    console.log("🔌 secret:", secret);
     if (secret !== process.env.BRIDGE_SECRET_KEY) {
         return res.status(401).json({ error: 'Unauthorized bridge request' });
     }
@@ -36,6 +38,16 @@ app.post("/broadcast", bridgeAuth, (req, res) => {
     io.emit(event, data);
 
     res.json({ ok: true });
+});
+
+app.get('/health', (req, res) => {
+    const incomingSecret = req.headers['x-bridge-secret'];
+    const localSecret = process.env.BRIDGE_SECRET_KEY;
+
+    if (incomingSecret !== localSecret) {
+        return res.status(401).json({ status: 'Unauthorized' });
+    }
+    res.json({ status: 'ok', message: 'NodeJS is alive' });
 });
 
 io.on("connection", (socket) => {
