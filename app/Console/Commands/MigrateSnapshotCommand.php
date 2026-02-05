@@ -3,163 +3,188 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\Finder;
 
 class MigrateSnapshotCommand extends Command
 {
-    protected $signature = 'migrate:snapshot {--force}';
-    protected $description = 'Create a full schema snapshot migration (tables, indexes, foreign keys)';
+    protected $signature = 'migrate:snapshot {--force : Skip confirmation}';
 
-    protected string $snapshotPath = 'database/migrations/0000_00_00_000000_schema_snapshot.php';
+    protected $description = 'Snapshot current database schema into a single migration and backup all existing migrations';
+
+    protected Migrator $migrator;
+
+    public function __construct(Migrator $migrator)
+    {
+        parent::__construct();
+        $this->migrator = $migrator;
+    }
 
     public function handle(): int
     {
-        if (File::exists(base_path($this->snapshotPath)) && !$this->option('force')) {
-            $this->error('Schema snapshot already exists. Use --force to overwrite.');
+        if (! $this->option('force')) {
+            if (! $this->confirm('This will snapshot the current database schema and move ALL existing migrations to backup. Continue?')) {
+                $this->info('Aborted.');
+                return self::SUCCESS;
+            }
+        }
+
+        $this->info('📸 Generating schema snapshot...');
+
+        $snapshotMigrationPath = database_path('migrations/0000_00_00_000000_schema_snapshot.php');
+
+        if (file_exists($snapshotMigrationPath)) {
+            $this->error('Snapshot migration already exists.');
             return self::FAILURE;
         }
 
-        $schema = $this->buildSchema();
+        $schemaDump = $this->generateSchemaSnapshot();
 
-        File::put(
-            base_path($this->snapshotPath),
-            $this->migrationStub($schema)
+        file_put_contents(
+            $snapshotMigrationPath,
+            $this->wrapMigration($schemaDump)
         );
 
-        $this->backupOldMigrations();
+        $this->info('✅ Snapshot migration created.');
 
-        $this->info('✅ Schema snapshot created successfully');
+        $this->backupExistingMigrations($snapshotMigrationPath);
+
+        $this->info('📦 All existing migrations backed up.');
+
         return self::SUCCESS;
     }
 
-    /**
-     * Build schema from INFORMATION_SCHEMA
-     */
-    protected function buildSchema(): string
+    protected function generateSchemaSnapshot(): string
     {
-        $database = DB::getDatabaseName();
-        $tables = DB::select(
-            'SELECT TABLE_NAME FROM information_schema.tables WHERE table_schema = ?',
-            [$database]
-        );
+        $tables = DB::select('SHOW FULL TABLES WHERE Table_type = "BASE TABLE"');
 
         $schema = '';
 
-        foreach ($tables as $table) {
-            $schema .= $this->buildTable($table->TABLE_NAME);
+        foreach ($tables as $row) {
+            $table = array_values((array) $row)[0];
+
+            $schema .= $this->renderTable($table) . PHP_EOL . PHP_EOL;
         }
 
-        return $schema;
+        return trim($schema);
     }
 
-    protected function buildTable(string $table): string
+    protected function renderTable(string $table): string
     {
-        $columns = DB::select("
-            SELECT * FROM information_schema.columns
-            WHERE table_schema = DATABASE() AND table_name = ?
-            ORDER BY ORDINAL_POSITION
-        ", [$table]);
-
-        $indexes = DB::select("
-            SELECT * FROM information_schema.statistics
-            WHERE table_schema = DATABASE() AND table_name = ?
-        ", [$table]);
-
+        $columns = DB::select("SHOW FULL COLUMNS FROM `$table`");
+        $indexes = DB::select("SHOW INDEX FROM `$table`");
         $foreignKeys = DB::select("
             SELECT
-                kcu.constraint_name,
-                kcu.column_name,
-                kcu.referenced_table_name,
-                kcu.referenced_column_name,
-                rc.update_rule,
-                rc.delete_rule
-            FROM information_schema.key_column_usage kcu
-            JOIN information_schema.referential_constraints rc
-                ON kcu.constraint_name = rc.constraint_name
-            WHERE kcu.table_schema = DATABASE()
-              AND kcu.table_name = ?
-              AND kcu.referenced_table_name IS NOT NULL
+                k.COLUMN_NAME,
+                k.REFERENCED_TABLE_NAME,
+                k.REFERENCED_COLUMN_NAME,
+                r.UPDATE_RULE,
+                r.DELETE_RULE
+            FROM information_schema.KEY_COLUMN_USAGE k
+            JOIN information_schema.REFERENTIAL_CONSTRAINTS r
+              ON k.CONSTRAINT_NAME = r.CONSTRAINT_NAME
+             AND k.CONSTRAINT_SCHEMA = r.CONSTRAINT_SCHEMA
+            WHERE k.TABLE_SCHEMA = DATABASE()
+              AND k.TABLE_NAME = ?
+              AND k.REFERENCED_TABLE_NAME IS NOT NULL
         ", [$table]);
 
-        $code = "Schema::create('$table', function (Blueprint \$table) {\n";
+        $create = "Schema::create('$table', function (Blueprint \$table) {\n";
 
         foreach ($columns as $column) {
-            $code .= $this->columnToSchema($column);
+            $create .= '    ' . $this->renderColumn($column) . "\n";
         }
 
-        $code .= "});\n\n";
+        $this->renderIndexes($indexes, $create);
 
-        $code .= $this->buildIndexes($table, $indexes);
-        $code .= $this->buildForeignKeys($table, $foreignKeys);
+        foreach ($foreignKeys as $fk) {
+            $create .= "    \$table->foreign('{$fk->COLUMN_NAME}')"
+                . "->references('{$fk->REFERENCED_COLUMN_NAME}')"
+                . "->on('{$fk->REFERENCED_TABLE_NAME}')"
+                . "->onUpdate('{$fk->UPDATE_RULE}')"
+                . "->onDelete('{$fk->DELETE_RULE}');\n";
+        }
 
-        return $code;
+        $create .= "});";
+
+        return <<<PHP
+if (!Schema::hasTable('$table')) {
+    $create
+}
+PHP;
     }
 
-    protected function columnToSchema(object $c): string
+    protected function renderColumn(object $column): string
     {
-        $nullable = $c->IS_NULLABLE === 'YES' ? '->nullable()' : '';
-        $default = $c->COLUMN_DEFAULT !== null
-            ? "->default(" . var_export($c->COLUMN_DEFAULT, true) . ")"
-            : '';
+        $type = $this->mapColumnType($column->Type);
+        $line = "\$table->$type('{$column->Field}')";
 
+        if ($column->Null === 'YES') {
+            $line .= '->nullable()';
+        }
+
+        if ($column->Default !== null) {
+            if (Str::contains($column->Default, 'CURRENT_TIMESTAMP')) {
+                if (Str::contains($column->Extra, 'on update')) {
+                    $line .= '->useCurrentOnUpdate()';
+                } else {
+                    $line .= '->useCurrent()';
+                }
+            } else {
+                $line .= "->default(" . var_export($column->Default, true) . ")";
+            }
+        }
+
+        if ($column->Extra === 'auto_increment') {
+            $line = "\$table->id()";
+        }
+
+        if ($column->Collation) {
+            $line .= "->collation('{$column->Collation}')";
+        }
+
+        return $line . ';';
+    }
+
+    protected function mapColumnType(string $type): string
+    {
         return match (true) {
-            str_contains($c->COLUMN_TYPE, 'bigint') =>
-                "    \$table->bigInteger('{$c->COLUMN_NAME}')$nullable$default;\n",
-            str_contains($c->COLUMN_TYPE, 'int') =>
-                "    \$table->integer('{$c->COLUMN_NAME}')$nullable$default;\n",
-            str_contains($c->COLUMN_TYPE, 'varchar') =>
-                "    \$table->string('{$c->COLUMN_NAME}', {$c->CHARACTER_MAXIMUM_LENGTH})$nullable$default;\n",
-            str_contains($c->COLUMN_TYPE, 'text') =>
-                "    \$table->text('{$c->COLUMN_NAME}')$nullable;\n",
-            str_contains($c->COLUMN_TYPE, 'timestamp') =>
-                "    \$table->timestamp('{$c->COLUMN_NAME}')$nullable$default;\n",
-            default =>
-                "    \$table->string('{$c->COLUMN_NAME}')$nullable;\n",
+            str_starts_with($type, 'bigint') => 'bigInteger',
+            str_starts_with($type, 'int') => 'integer',
+            str_starts_with($type, 'varchar') => 'string',
+            str_starts_with($type, 'text') => 'text',
+            str_starts_with($type, 'timestamp') => 'timestamp',
+            str_starts_with($type, 'datetime') => 'dateTime',
+            str_starts_with($type, 'date') => 'date',
+            default => 'string',
         };
     }
 
-    protected function buildIndexes(string $table, array $indexes): string
+    protected function renderIndexes(array $indexes, string &$schema): void
     {
-        $grouped = collect($indexes)->groupBy('INDEX_NAME');
+        $grouped = [];
 
-        $code = '';
+        foreach ($indexes as $index) {
+            $grouped[$index->Key_name][] = $index;
+        }
+
         foreach ($grouped as $name => $items) {
-            if ($name === 'PRIMARY') continue;
+            if ($name === 'PRIMARY') {
+                continue;
+            }
 
-            $cols = $items->pluck('COLUMN_NAME')->map(fn($c) => "'$c'")->implode(', ');
-            $unique = $items->first()->NON_UNIQUE == 0;
+            $columns = collect($items)->pluck('Column_name')->all();
+            $unique = $items[0]->Non_unique == 0;
 
-            $method = $unique ? 'unique' : 'index';
-
-            $code .= "Schema::table('$table', function (Blueprint \$table) {\n";
-            $code .= "    \$table->$method([$cols], '$name');\n";
-            $code .= "});\n\n";
+            $schema .= '    $table->' . ($unique ? 'unique' : 'index')
+                . '(' . var_export($columns, true) . ");\n";
         }
-
-        return $code;
     }
 
-    protected function buildForeignKeys(string $table, array $keys): string
-    {
-        $code = '';
-
-        foreach ($keys as $fk) {
-            $code .= "Schema::table('$table', function (Blueprint \$table) {\n";
-            $code .= "    \$table->foreign('{$fk->column_name}')\n";
-            $code .= "        ->references('{$fk->referenced_column_name}')\n";
-            $code .= "        ->on('{$fk->referenced_table_name}')\n";
-            $code .= "        ->onUpdate('{$fk->update_rule}')\n";
-            $code .= "        ->onDelete('{$fk->delete_rule}');\n";
-            $code .= "});\n\n";
-        }
-
-        return $code;
-    }
-
-    protected function migrationStub(string $schema): string
+    protected function wrapMigration(string $schema): string
     {
         return <<<PHP
 <?php
@@ -168,46 +193,45 @@ use Illuminate\\Database\\Migrations\\Migration;
 use Illuminate\\Database\\Schema\\Blueprint;
 use Illuminate\\Support\\Facades\\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
+        Schema::defaultStringLength(191);
+
 $schema
     }
 
     public function down(): void
     {
-        Schema::disableForeignKeyConstraints();
-
-        foreach (Schema::getAllTables() as \$table) {
-            Schema::drop(\$table);
-        }
-
-        Schema::enableForeignKeyConstraints();
+        // intentionally empty
     }
 };
 PHP;
     }
 
-    protected function backupOldMigrations(): void
+    protected function backupExistingMigrations(string $snapshotPath): void
     {
-        $timestamp = now()->format('Y_m_d_His');
-        $backupDir = database_path("migrations/_backup/$timestamp");
+        $timestamp = now()->format('Ymd_His');
+        $backupRoot = database_path("migrations/_backup/$timestamp");
 
-        File::ensureDirectoryExists($backupDir);
+        foreach ($this->migrator->paths() as $path) {
+            if (! is_dir($path)) {
+                continue;
+            }
 
-        $finder = (new Finder())
-            ->files()
-            ->in(database_path('migrations'))
-            ->name('*.php')
-            ->notName('*schema_snapshot.php')
-            ->notPath('_backup');
+            $finder = Finder::create()->files()->in($path)->name('*.php');
 
-        foreach ($finder as $file) {
-            File::move(
-                $file->getRealPath(),
-                $backupDir . '/' . $file->getFilename()
-            );
+            foreach ($finder as $file) {
+                if ($file->getRealPath() === realpath($snapshotPath)) {
+                    continue;
+                }
+
+                $relative = Str::after($file->getRealPath(), base_path());
+                $target = $backupRoot . $relative;
+
+                @mkdir(dirname($target), 0777, true);
+                rename($file->getRealPath(), $target);
+            }
         }
     }
 }
