@@ -23,6 +23,7 @@ use Modules\Admin\Http\Controllers\ProductCommissionController;
 use Modules\Admin\Http\Controllers\ChatController;
 use Modules\Admin\Http\Controllers\Auth\GoogleController;
 use Modules\Admin\Http\Controllers\EnvConfigController;
+use Modules\Admin\Http\Controllers\DatabaseController;
 
 Route::middleware(['web'])->group(function () {
 
@@ -114,6 +115,15 @@ Route::middleware(['web'])->group(function () {
             Route::get('/staff/create', [StaffController::class, 'create'])->name('create');
             Route::get('/staff/{id}/edit', [StaffController::class, 'edit'])->name('edit');
         });
+
+        Route::prefix('/database')->name('database.')->group(function() {
+            Route::get('/', [DatabaseController::class, 'index'])
+                ->name('index');
+            Route::get('/download/{filename}', [DatabaseController::class, 'download'])
+                ->name('download')
+                ->where('filename', '.*'); // Quan trọng: Cho phép dấu chấm và các ký tự trong tên file
+        });
+
 
     });
 
