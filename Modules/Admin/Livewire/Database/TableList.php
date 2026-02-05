@@ -27,7 +27,7 @@ class TableList extends Component
 
     public function updatedSearch()
     {
-        $this->resetPage(); // Nếu có phân trang
+        //$this->resetPage(); // Nếu có phân trang
     }
 
     public function updatedSelectAll($value)
