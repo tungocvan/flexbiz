@@ -1,5 +1,5 @@
 pm2 start queue/queue-worker.sh --name laravel-queue-flexbiz
-phan-quyen.sh /var/www/flexbiz/Modules/Website/database/Seeders/menu.json
+phan-quyen.sh Modules/Website/database/Seeders/menu.json
 echo "
     Câu lệnh quản lý pm2 \n
     pm2 start queue-worker.sh	Khởi động \n
