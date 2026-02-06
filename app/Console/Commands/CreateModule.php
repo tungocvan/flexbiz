@@ -80,12 +80,12 @@ class CreateModule extends Command
             }
 
             Artisan::call('create:model', [
-                'name' => strtolower($name),
+                'model' => strtolower($name),
                 'module' => strtolower($name)
             ]);
 
             Artisan::call('create:controller', [
-                'name' => strtolower($name),
+                'controller' => strtolower($name),
                 'module' => strtolower($name)
             ]);
             Artisan::call('create:routes', [

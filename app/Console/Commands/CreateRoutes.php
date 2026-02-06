@@ -23,43 +23,61 @@ class CreateRoutes extends Command
     public function handle(): void
     {
         $name = ucfirst($this->argument('name'));
+        $module = strtolower($name);
         $modulePath = base_path("Modules/{$name}/routes");
 
-        // Kiểm tra thư mục routes
+        // Tạo thư mục routes nếu chưa tồn tại
         if (!File::exists($modulePath)) {
             File::makeDirectory($modulePath, 0755, true);
             $this->info("📁 Đã tạo thư mục: {$modulePath}");
         }
 
-        // Danh sách routes cần tạo
-        $routes = [
-            'web' => 'routes-web.txt',
-            'api' => 'routes-api.txt',
-        ];
+        /**
+         * Nội dung routes web
+         */
+        $webContent = <<<PHP
+<?php
 
-        foreach ($routes as $type => $templateFile) {
-            $templatePath = app_path("Console/Commands/template/{$templateFile}");
-            $targetPath = "{$modulePath}/{$type}.php";
+use Illuminate\Support\Facades\Route;
+use Modules\\{$name}\\Http\\Controllers\\{$name}Controller;
 
-            if (!File::exists($templatePath)) {
-                $this->error("⚠️  Không tìm thấy template: {$templatePath}");
-                continue;
-            }
+Route::middleware(['web','auth:admin'])
+    ->prefix('/{$module}')
+    ->name('{$module}.')
+    ->group(function () {
+        Route::get('/', [{$name}Controller::class, 'index'])->name('index');
+    });
+PHP;
 
-            // Đọc và thay thế nội dung template
-            $content = str_replace(
-                ['{Module}', '{module}'],
-                [$name, strtolower($name)],
-                File::get($templatePath)
-            );
+        /**
+         * Nội dung routes api
+         */
+        $apiContent = <<<PHP
+<?php
 
-            // Ghi nội dung vào file
-            File::put($targetPath, $content);
+use Illuminate\Support\Facades\Route;
+use Modules\\{$name}\\Http\\Controllers\\Api\\{$name}Controller;
 
-            $this->info("✅ Đã tạo file routes {$type}.php cho module {$name}");
-        }
+// Route::middleware('auth:sanctum')
+//     ->controller({$name}Controller::class)
+//     ->prefix('{$module}')
+//     ->group(function () {
+//         Route::get('/', 'index');
+//     });
 
+Route::prefix('{$module}')
+    ->controller({$name}Controller::class)
+    ->group(function () {
+        Route::get('/', 'index');
+    });
+PHP;
+
+        // Ghi file
+        File::put("{$modulePath}/web.php", $webContent);
+        File::put("{$modulePath}/api.php", $apiContent);
+
+        $this->info("✅ Đã tạo routes web.php & api.php cho module {$name}");
         $this->newLine();
-        $this->info("🎉 Hoàn tất tạo routes cho module: {$name}");
+        $this->info("🎉 Hoàn tất!");
     }
 }
