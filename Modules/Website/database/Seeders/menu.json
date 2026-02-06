@@ -201,5 +201,13 @@
         "can": "view_setting",
         "is_active": true,
         "children": []
+    },
+    {
+        "name": "Quản lý Database",
+        "url": "\/admin\/database",
+        "icon": "cog",
+        "can": "view_setting",
+        "is_active": true,
+        "children": []
     }
 ]

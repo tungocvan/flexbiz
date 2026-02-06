@@ -29,7 +29,6 @@ class MergeMigrationsCommand extends Command
                 $schemaBlocks,
                 $this->extractSchema($content, $file)
             );
-            
         }
 
         $merged = $this->buildMigrationFile(array_filter($schemaBlocks));
@@ -38,8 +37,14 @@ class MergeMigrationsCommand extends Command
 
         $this->info('✅ Merged migration created: ' . $this->outputFile);
 
+        // 🔥 MOVE MIGRATIONS TO _backup
+        $this->moveMigrationsToBackup($migrationFiles);
+
+        $this->info('📦 Original migrations moved to database/migrations/_backup');
+
         return Command::SUCCESS;
     }
+
 
     /**
      * Get all migration files from core + modules
@@ -76,65 +81,65 @@ class MergeMigrationsCommand extends Command
     /**
      * Extract Schema::create & Schema::table blocks
      */
-    
+
      protected function extractSchema(string $content, string $file): array
-{
-    $tokens = token_get_all($content);
+    {
+        $tokens = token_get_all($content);
 
-    $schemas = [];
-    $capturing = false;
-    $buffer = '';
-    $braceLevel = 0;
+        $schemas = [];
+        $capturing = false;
+        $buffer = '';
+        $braceLevel = 0;
 
-    $total = count($tokens);
+        $total = count($tokens);
 
-    for ($i = 0; $i < $total; $i++) {
-        $token = $tokens[$i];
+        for ($i = 0; $i < $total; $i++) {
+            $token = $tokens[$i];
 
-        // Detect Schema::create OR Schema::table
-        if (
-            is_array($token)
-            && $token[0] === T_STRING
-            && $token[1] === 'Schema'
-            && isset($tokens[$i + 1], $tokens[$i + 2])
-            && is_array($tokens[$i + 1])
-            && $tokens[$i + 1][0] === T_DOUBLE_COLON
-            && is_array($tokens[$i + 2])
-            && in_array($tokens[$i + 2][1], ['create', 'table'], true)
-        ) {
-            $capturing = true;
-            $buffer = '';
-            $braceLevel = 0;
+            // Detect Schema::create OR Schema::table
+            if (
+                is_array($token)
+                && $token[0] === T_STRING
+                && $token[1] === 'Schema'
+                && isset($tokens[$i + 1], $tokens[$i + 2])
+                && is_array($tokens[$i + 1])
+                && $tokens[$i + 1][0] === T_DOUBLE_COLON
+                && is_array($tokens[$i + 2])
+                && in_array($tokens[$i + 2][1], ['create', 'table'], true)
+            ) {
+                $capturing = true;
+                $buffer = '';
+                $braceLevel = 0;
+            }
+
+            if ($capturing) {
+                $buffer .= is_array($token) ? $token[1] : $token;
+
+                if ($token === '{') {
+                    $braceLevel++;
+                }
+
+                if ($token === '}') {
+                    $braceLevel--;
+                }
+
+                // kết thúc Schema block khi closure đóng xong và gặp ;
+                if ($braceLevel === 0 && $token === ';') {
+                    $schemas[] = $buffer;
+                    $capturing = false;
+                }
+            }
         }
 
-        if ($capturing) {
-            $buffer .= is_array($token) ? $token[1] : $token;
-
-            if ($token === '{') {
-                $braceLevel++;
-            }
-
-            if ($token === '}') {
-                $braceLevel--;
-            }
-
-            // kết thúc Schema block khi closure đóng xong và gặp ;
-            if ($braceLevel === 0 && $token === ';') {
-                $schemas[] = $buffer;
-                $capturing = false;
-            }
+        if (empty($schemas)) {
+            return [];
         }
-    }
 
-    if (empty($schemas)) {
-        return [];
+        return array_map(
+            fn ($schema) => "// Source: {$file}\n{$schema}",
+            $schemas
+        );
     }
-
-    return array_map(
-        fn ($schema) => "// Source: {$file}\n{$schema}",
-        $schemas
-    );
-}
 
 
     /**
@@ -174,4 +179,32 @@ PHP;
             explode("\n", $text)
         ));
     }
+
+    protected function moveMigrationsToBackup(array $files): void
+    {
+        $backupDir = database_path('migrations/_backup');
+
+        if (! is_dir($backupDir)) {
+            mkdir($backupDir, 0755, true);
+        }
+
+        foreach ($files as $file) {
+            // bỏ qua file merged
+            if (str_contains($file, 'merged_schema.php')) {
+                continue;
+            }
+
+            // bỏ qua file đã ở _backup
+            if (str_contains($file, '_backup')) {
+                continue;
+            }
+
+            $target = $backupDir . '/' . basename($file);
+
+            if (! file_exists($target)) {
+                rename($file, $target);
+            }
+        }
+    }
+
 }

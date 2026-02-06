@@ -11,7 +11,7 @@ class SplitMigrationsCommand extends Command
 {
     protected $signature = 'split:migrations {file}';
 
-    protected $description = 'Split a migration containing multiple Schema::create into separate migration files and move original to _backup';
+    protected $description = 'Split merged migration into ordered single-table migrations (safe migrate order)';
 
     public function handle(): int
     {
@@ -31,8 +31,9 @@ class SplitMigrationsCommand extends Command
 
         $content = file_get_contents($migrationPath);
 
+        // Lấy Schema::create theo ĐÚNG THỨ TỰ xuất hiện
         preg_match_all(
-            "/Schema::create\\(\\s*['\"]([^'\"]+)['\"]\\s*,\\s*function\\s*\\([^)]*\\)\\s*\\{([\\s\\S]*?)\\}\\s*\\);/m",
+            "/Schema::create\\(\\s*['\"]([^'\"]+)['\"]\\s*,\\s*function\\s*\\([^)]*\\)\\s*\\{([\\s\\S]*?)\\n\\s*\\}\\s*\\);/m",
             $content,
             $matches,
             PREG_SET_ORDER
@@ -43,24 +44,22 @@ class SplitMigrationsCommand extends Command
             return self::SUCCESS;
         }
 
-        $this->info('Splitting migration: ' . basename($migrationPath));
+        $this->info('Splitting migration (preserve merge order): ' . basename($migrationPath));
 
-        $timestampBase = $this->extractTimestamp(basename($migrationPath));
-        $directory = dirname($migrationPath);
+        $baseTimestamp = $this->extractRawTimestamp(basename($migrationPath));
+        $directory     = dirname($migrationPath);
 
-        foreach ($matches as $index => $match) {
-            $table = $match[1];
-            $schemaBody = trim($match[2]);
+        foreach ($matches as $order => $match) {
+            $table      = $match[1];
+            $schemaBody = rtrim($match[2]);
 
-            $timestamp = date(
-                'Y_m_d_His',
-                strtotime($timestampBase . " +{$index} seconds")
-            );
+            // tăng timestamp theo thứ tự xuất hiện (KHÔNG dùng strtotime)
+            $timestamp = $this->incrementTimestamp($baseTimestamp, $order);
 
-            $newFileName = "{$timestamp}_create_{$table}_table.php";
-            $newPath = $directory . DIRECTORY_SEPARATOR . $newFileName;
+            $fileName = "{$timestamp}_create_{$table}_table.php";
+            $path     = $directory . DIRECTORY_SEPARATOR . $fileName;
 
-            $migrationStub = <<<PHP
+            $stub = <<<PHP
 <?php
 
 use Illuminate\\Database\\Migrations\\Migration;
@@ -83,24 +82,40 @@ return new class extends Migration
 };
 PHP;
 
-            file_put_contents($newPath, $migrationStub);
-
-            $this->line("  → created {$newFileName}");
+            file_put_contents($path, $stub);
+            $this->line("  → {$fileName}");
         }
 
         $this->moveToBackup($migrationPath);
 
-        $this->info('Split completed successfully.');
+        $this->info('Split completed. Order preserved. Safe to migrate ✅');
 
         return self::SUCCESS;
     }
 
-    private function extractTimestamp(string $fileName): string
+    /**
+     * Trả về raw timestamp dạng: 2024_01_01_000001
+     */
+    private function extractRawTimestamp(string $file): string
     {
-        // 2024_01_01_000001_xxx.php
-        $parts = explode('_', $fileName);
+        return substr($file, 0, 17);
+    }
 
-        return "{$parts[0]}-{$parts[1]}-{$parts[2]} {$parts[3]}:{$parts[4]}:{$parts[5]}";
+    /**
+     * Tăng timestamp theo thứ tự: +1 giây mỗi bảng
+     */
+    private function incrementTimestamp(string $base, int $offset): string
+    {
+        [$y, $m, $d, $his] = explode('_', $base);
+
+        $time = \DateTime::createFromFormat(
+            'Y-m-d H:i:s',
+            "{$y}-{$m}-{$d} " . substr($his, 0, 2) . ':' . substr($his, 2, 2) . ':' . substr($his, 4, 2)
+        );
+
+        $time->modify("+{$offset} seconds");
+
+        return $time->format('Y_m_d_His');
     }
 
     private function moveToBackup(string $migrationPath): void
@@ -111,39 +126,31 @@ PHP;
             mkdir($backupDir, 0755, true);
         }
 
-        $backupPath = $backupDir
-            . DIRECTORY_SEPARATOR
-            . basename($migrationPath)
-            . '.backup';
+        $backupPath = $backupDir . '/' . basename($migrationPath) . '.backup';
 
-        if (file_exists($backupPath)) {
-            $this->warn('Backup already exists: ' . basename($backupPath));
-            return;
+        if (! file_exists($backupPath)) {
+            rename($migrationPath, $backupPath);
         }
 
-        rename($migrationPath, $backupPath);
-
-        $this->info('Original migration moved to _backup: ' . basename($backupPath));
+        $this->info('Original migration moved to _backup');
     }
 
     private function findMigrationFile(string $input, array $paths): ?string
     {
-        // Case 1: full / relative path
         if (file_exists(base_path($input))) {
             return realpath(base_path($input));
         }
 
-        // Case 2: filename only (recursive search)
         foreach ($paths as $path) {
             if (! is_dir($path)) {
                 continue;
             }
 
-            $iterator = new RecursiveIteratorIterator(
+            $it = new RecursiveIteratorIterator(
                 new RecursiveDirectoryIterator($path)
             );
 
-            foreach ($iterator as $file) {
+            foreach ($it as $file) {
                 if (
                     $file->isFile() &&
                     $file->getFilename() === $input &&
