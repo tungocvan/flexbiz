@@ -65,6 +65,14 @@
         "children": []
     },
     {
+        "name": "Mã giảm giá",
+        "url": "\/admin\/coupons",
+        "icon": "ticket",
+        "can": "view_coupon",
+        "is_active": true,
+        "children": []
+    },
+    {
         "name": "Khách hàng",
         "url": "\/admin\/customers",
         "icon": "users",
@@ -101,14 +109,6 @@
         "url": null,
         "icon": null,
         "can": null,
-        "is_active": true,
-        "children": []
-    },
-    {
-        "name": "Mã giảm giá",
-        "url": "\/admin\/coupons",
-        "icon": "ticket",
-        "can": "view_coupon",
         "is_active": true,
         "children": []
     },
@@ -191,16 +191,16 @@
                 "can": "view_staff",
                 "is_active": true,
                 "children": []
+            },
+            {
+                "name": "Cấu hình chung",
+                "url": "\/admin\/settings",
+                "icon": "cog",
+                "can": "view_setting",
+                "is_active": true,
+                "children": []
             }
         ]
-    },
-    {
-        "name": "Cấu hình chung",
-        "url": "\/admin\/settings",
-        "icon": "cog",
-        "can": "view_setting",
-        "is_active": true,
-        "children": []
     },
     {
         "name": "Quản lý Database",
