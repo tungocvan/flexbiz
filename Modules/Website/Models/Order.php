@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Models\User;
 use Modules\Website\Models\OrderHistory;
-use Illuminate\Support\Facades\Http;
+//use Illuminate\Support\Facades\Http;
 
 class Order extends Model
 {
@@ -33,18 +33,18 @@ class Order extends Model
         'status',
     ];
 
-    protected static function booted()
-    {
-        static::created(function (Order $order) {
+    // protected static function booted()
+    // {
+    //     static::created(function (Order $order) {
 
-            Http::post(config('services.socket.url') . '/broadcast', [
-                'channel' => 'orders',
-                'event'   => 'order.created',
-                'data'    => $order->toArray(),
-            ]);
+    //         Http::post(config('services.socket.url') . '/broadcast', [
+    //             'channel' => 'orders',
+    //             'event'   => 'order.created',
+    //             'data'    => $order->toArray(),
+    //         ]);
 
-        });
-    }
+    //     });
+    // }
     // Helper: Badge màu trạng thái (Master UI Style)
     public function getStatusBadgeAttribute()
     {
@@ -92,9 +92,9 @@ class Order extends Model
     {
         // Sum toàn bộ commission_amount của các item thuộc order này
         $total = $this->items()->sum('commission_amount');
-        
+
         $this->update(['commission_amount' => $total]);
-        
+
         return $total;
     }
 }

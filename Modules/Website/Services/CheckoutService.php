@@ -33,6 +33,7 @@ class CheckoutService
     public function createOrder(array $data)
     {
         // 1. Lấy dữ liệu từ CartService (Đã bao gồm tính toán Coupon, Subtotal, Total)
+
         $cartSummary = $this->cartService->getCartSummary();
         $cart = $cartSummary['cart'];
         $items = $cartSummary['items'];
@@ -76,9 +77,7 @@ class CheckoutService
                 'momo', 'vnpay', 'bank_transfer' => 'pending_payment', // Chờ thanh toán
                 default => 'pending', // Chờ xử lý (COD)
             };
-
-            // --- C. TẠO ORDER ---
-            $order = Order::create([
+            $orderNew= [
                 'user_id'           => Auth::id(),
                 'order_code'        => $this->generateOrderCode(),
 
@@ -106,7 +105,10 @@ class CheckoutService
                 // Meta
                 'payment_method'    => $data['payment_method'],
                 'status'            => $initialStatus,
-            ]);
+            ];
+            // --- C. TẠO ORDER ---
+
+            $order = Order::create($orderNew);
 
             // --- D. TẠO ORDER ITEMS & TRỪ KHO ---
             foreach ($items as $item) {
